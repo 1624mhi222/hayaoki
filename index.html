@@ -131,6 +131,10 @@
   .head { display: flex; justify-content: space-between; align-items: baseline; }
   .head .linkbtn { color: var(--accent); margin: 0; }
   .empty { color: var(--quiet); font-size: 14px; padding: 6px 0; }
+  .sugs { background: var(--accent-soft); border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; }
+  .sugs h2 { margin: 0; font-size: 14px; }
+  .sugs .item { border-top-color: rgba(0,0,0,.06); }
+  .btn.sm { width: auto; margin: 0; padding: 6px 12px; font-size: 13px; }
   /* PC: 早起き・日課・TODOを3列に並べ、タブは出さない */
   .cols { display: block; }
   @media (min-width: 1000px) {
@@ -169,6 +173,8 @@ const PLANTS = [
   { lv: 5, face: '🪴', name: 'はちうえ' }, { lv: 7, face: '🌷', name: 'つぼみ' }, { lv: 10, face: '🌻', name: 'ひまわり' },
   { lv: 14, face: '🌳', name: '木' }, { lv: 19, face: '🌸', name: 'さくらの木' }, { lv: 25, face: '🍎', name: 'りんごの木' },
 ];
+// Obsidian から来た「提案」。アプリで「追加」を押すまでは TODO に数えない
+const isSug = x => !!(x.src && x.src.startsWith('提案:') && !x.accepted);
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 const Calc = {
   pad: n => String(n).padStart(2, '0'),
@@ -235,6 +241,7 @@ const Calc = {
   // 日課とTODOで育てる植物。ひよことは別の経験値。日課1回+5、TODO1つ+8
   // 罰: やる日に日課をしなかったら1回-5、TODOは期限を過ぎた1日ごとに-3(終わらせるまで続く)。経験値は0より下がらない
   garden(st, today) {
+    st = Object.assign({}, st, { todos: st.todos.filter(x => !isSug(x)) });
     const checks = Object.values(st.hlog).reduce((a, l) => a + l.length, 0);
     const done = st.todos.filter(x => x.done).length;
     let missed = 0, missedY = 0, late = 0;
@@ -530,8 +537,8 @@ function settingsCard() {
 function gardenCard(g, t) {
   const today = Calc.ymd(t), wd = t.getDay();
   const due = S.habits.filter(h => Calc.isDue(h, today)), did = due.filter(h => (S.hlog[today] || []).includes(h.id));
-  const left = S.todos.filter(x => !x.done).length;
-  const overdue = S.todos.filter(x => !x.done && x.due && x.due < today).length;
+  const left = S.todos.filter(x => !x.done && !isSug(x)).length;
+  const overdue = S.todos.filter(x => !x.done && !isSug(x) && x.due && x.due < today).length;
   return `<section class="card"><div class="pet">
     <div class="face plant ${g.wilted ? 'wilt' : ''}" id="face2">${g.wilted ? '🥀' : g.stage.face}</div>
     <div class="info"><div class="name">${g.wilted ? 'しおれた' : ''}${g.stage.name} <span class="label">Lv.${g.lv}</span></div>
@@ -575,8 +582,9 @@ function habitEditor(h) {
 }
 function todosCard(t) {
   const today = Calc.ymd(t);
-  const open = S.todos.filter(x => !x.done).sort((a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0);
-  const done = S.todos.filter(x => x.done).sort((a, b) => a.done < b.done ? 1 : -1);
+  const sugs = S.todos.filter(x => isSug(x) && !x.done);
+  const open = S.todos.filter(x => !x.done && !isSug(x)).sort((a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0);
+  const done = S.todos.filter(x => x.done && !isSug(x)).sort((a, b) => a.done < b.done ? 1 : -1);
   const dueTag = x => {
     if (!x.due) return '';
     const cls = x.due < today ? 'over' : x.due === today ? 'today' : '';
@@ -589,7 +597,11 @@ function todosCard(t) {
     <button class="tick ${x.done ? 'on' : ''}" data-t="tcheck" data-id="${x.id}" aria-label="できた">${x.done ? '✓' : ''}</button>
     <div class="what" data-t="open" data-id="${x.id}">${esc(x.text)}${x.done ? '' : dueTag(x)}</div>
     <button class="del" data-t="tdel" data-id="${x.id}" aria-label="消す">✕</button></div>`;
-  return `<section class="card"><h2>TODO</h2>${open.map(row).join('') || '<div class="empty">やることはぜんぶ終わり 🎉</div>'}
+  const note = x => x.src.slice(3).split('::')[0].split('/').pop().replace(/\.md$/, '');
+  const sugCard = sugs.length ? `<div class="sugs"><div class="head"><h2>💡 Obsidianからの提案</h2><span class="label">${sugs.length}件</span></div>
+    ${sugs.map(x => `<div class="item"><div class="what">${esc(x.text)}${dueTag(x)}<small>${esc(note(x))}</small></div>
+      <button class="btn main sm" data-t="saccept" data-id="${x.id}">追加</button><button class="del" data-t="tdel" data-id="${x.id}" aria-label="いらない">✕</button></div>`).join('')}</div>` : '';
+  return `<section class="card"><h2>TODO</h2>${sugCard}${open.map(row).join('') || '<div class="empty">やることはぜんぶ終わり 🎉</div>'}
     <form class="add" data-form="todo">${S.bulk
       ? `<textarea name="text" rows="6" placeholder="1行に1つずつ。メモアプリやObsidianからそのまま貼りつけてOK"></textarea>`
       : `<input type="text" name="text" placeholder="やること" maxlength="80" autocomplete="off">`}
@@ -715,6 +727,7 @@ document.addEventListener('click', e => {
     case 'hdel': { const h = S.habits.find(x => x.id === id); if (h && confirm(`「${h.name}」を消しますか？（もらった経験値はそのまま）`)) { S.habits = S.habits.filter(x => x.id !== id); S.editing = null; } break; }
     case 'tcheck': { const x = S.todos.find(x => x.id === id); if (x) x.done = x.done ? null : t.toISOString(); break; }
     case 'tdel': S.todos = S.todos.filter(x => x.id !== id); break;
+    case 'saccept': { const x = S.todos.find(x => x.id === id); if (x) x.accepted = true; break; }
     default: return;
   }
   saveTasks(); render();
