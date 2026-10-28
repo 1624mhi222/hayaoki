@@ -112,6 +112,9 @@
   .head { display: flex; justify-content: space-between; align-items: baseline; }
   .head .linkbtn { color: var(--accent); margin: 0; }
   .empty { color: var(--quiet); font-size: 14px; padding: 6px 0; }
+  .graves { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px; font-size: 13px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .pet .face.wilt { background: var(--bad-soft); filter: saturate(.6); }
+  .warnline { color: var(--bad); }
 </style>
 </head>
 <body>
@@ -124,7 +127,7 @@ const EARLY = 15, LATE = 30;   // 「授業に出た」を押せるのは授業�
 const RESULT = {
   perfect: '大成功！ 早起きして、二度寝せず、授業に出た',
   attended: '授業には出られた',
-  absent: '授業に出られなかった',
+  absent: '授業を休んだ…',
 };
 // レベルごとの姿。lv はその姿になるレベル
 const STAGES = [
@@ -163,9 +166,9 @@ const Calc = {
     const from = c1 && new Date(+c1 + s.gap * MIN), until = c1 && new Date(+from + WIN * MIN);
     if (c3 || now >= aClose) {
       const parts = {
-        wake: !c1 ? 0 : c1 <= p.target ? 10 : 3,
+        wake: !c1 ? 0 : c1 < +p.target + MIN ? 10 : 3,
         stay: c2 ? 10 : 0,
-        attend: !c3 ? 0 : c3 <= +p.cls + 5 * MIN ? 15 : 5,
+        attend: !c3 ? 0 : c3 < +p.cls + 6 * MIN ? 15 : 5,
       };
       const result = !c3 ? 'absent' : parts.wake === 10 && parts.stay && parts.attend === 15 ? 'perfect' : 'attended';
       return { phase: 'done', result, parts, xp: parts.wake + parts.stay + parts.attend, c1, c2, c3 };
@@ -179,19 +182,24 @@ const Calc = {
     return { phase: 'go', aOpen, c1 };
   },
   // 使い始めた日から今日までを順に見て、経験値と連続記録を数える
-  // 大成功で連続+1、授業に出られなかったら半分(0には戻さない)、それ以外はそのまま
+  // 大成功で連続+1。授業を休んだらひよこは死んで、お墓に入り、たまごからやり直し(経験値も連続も0)
   stats(log, s, now) {
     const today = this.ymd(now);
     let xp = 0, streak = 0, best = 0, perfect = 0, days = 0;
+    const graves = [];
     for (let d = s.start; d <= today; d = this.addDays(d, 1)) {
       const j = this.judge(this.plan(d, s), log[d], now, s);
       if (!j.result) continue;
       days++; xp += j.xp;
       if (j.result === 'perfect') { streak++; perfect++; }
-      else if (j.result === 'absent') streak = Math.floor(streak / 2);
       best = Math.max(best, streak);
+      if (j.result === 'absent') {
+        const L = this.level(xp);
+        graves.push({ day: d, lv: L.lv, face: L.stage.face, name: L.stage.name });
+        xp = 0; streak = 0;
+      }
     }
-    return { xp, streak, best, perfect, days, ...this.level(xp) };
+    return { xp, streak, best, perfect, days, graves, gen: graves.length + 1, ...this.level(xp) };
   },
   // レベル1→2は40、そこから1レベルごとに必要な経験値が20ずつ増える
   level(xp, stages = STAGES) {
@@ -202,12 +210,27 @@ const Calc = {
     return { lv, into: rest, need, stage, next };
   },
   // 日課とTODOで育てる植物。ひよことは別の経験値。日課1回+5、TODO1つ+8
-  garden(hlog, todos) {
-    const checks = Object.values(hlog).reduce((a, l) => a + l.length, 0);
-    const done = todos.filter(x => x.done).length;
-    const xp = checks * 5 + done * 8;
+  // 罰: やる日に日課をしなかったら1回-5、TODOは期限を過ぎた1日ごとに-3(終わらせるまで続く)。経験値は0より下がらない
+  garden(st, today) {
+    const checks = Object.values(st.hlog).reduce((a, l) => a + l.length, 0);
+    const done = st.todos.filter(x => x.done).length;
+    let missed = 0, missedY = 0, late = 0;
+    const yday = this.addDays(today, -1);
+    st.habits.forEach(h => {
+      for (let d = h.since || today; d < today; d = this.addDays(d, 1)) {
+        if (h.days.includes(this.parse(d).getDay()) && !(st.hlog[d] || []).includes(h.id)) { missed++; if (d === yday) missedY++; }
+      }
+    });
+    st.todos.forEach(x => {
+      if (!x.due) return;
+      const end = x.done ? this.ymd(new Date(x.done)) : today;
+      late += Math.max(0, Math.round((this.parse(end) - this.parse(x.due)) / 864e5));
+    });
+    const penalty = missed * 5 + late * 3;
+    const xp = Math.max(0, checks * 5 + done * 8 - penalty);
     const L = this.level(xp, PLANTS);
-    return { xp, ...L };
+    const wilted = missedY > 0 || st.todos.some(x => !x.done && x.due && x.due < today);
+    return { xp, penalty, missedY, wilted, ...L };
   },
   // その日課が何回続けてできているか。今日まだなら昨日までを数える
   habitStreak(h, hlog, today) {
@@ -273,16 +296,18 @@ const mmss = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return Calc.pa
 
 function petCard(st) {
   const pct = Math.round(st.into / st.need * 100);
+  const graves = st.graves.length ? `<div class="graves"><span class="label">お墓</span> ${st.graves.slice(-8).reverse().map((g, i) =>
+    `<span title="${g.day}">🪦 ${st.graves.length - i}代目 ${g.face}Lv.${g.lv} <span class="label">${Number(g.day.slice(5, 7))}/${Number(g.day.slice(8))}</span></span>`).join('')}</div>` : '';
   return `<section class="card"><div class="pet">
     <div class="face" id="face">${st.stage.face}</div>
-    <div class="info"><div class="name">${st.stage.name} <span class="label">Lv.${st.lv}</span></div>
+    <div class="info"><div class="name">${st.gen > 1 ? `<span class="label">${st.gen}代目</span> ` : ''}${st.stage.name} <span class="label">Lv.${st.lv}</span></div>
       <div class="bar"><div style="width:${pct}%"></div></div>
       <div class="label">次のレベルまで ${st.need - st.into} XP${st.next ? ` ・ Lv.${st.next.lv}で${st.next.face}に進化` : ''}</div></div></div>
     <div class="stats">
       <div class="stat"><span class="label">🔥 連続成功</span><b>${st.streak}</b></div>
       <div class="stat"><span class="label">最高記録</span><b>${st.best}</b></div>
       <div class="stat"><span class="label">大成功</span><b>${st.perfect}<span class="label">/${st.days}回</span></b></div>
-    </div></section>`;
+    </div>${graves}</section>`;
 }
 
 function todayCard(t) {
@@ -298,7 +323,7 @@ function todayCard(t) {
     body = `<div class="msg">まだ早いよ</div><div class="hint">${Calc.hm(p.open)} から押せるようになります</div>`;
   } else if (j.phase === 'wake') {
     body = `<div class="msg">${j.late ? '目標を過ぎてる！急いで' : 'おはよう！'}</div>
-      <div class="hint">${j.late ? `授業 ${Calc.hm(p.cls)} までに押せば少しだけ経験値` : `${Calc.hm(p.target)} までに押すと大成功のチャンス`}</div>
+      <div class="hint">${j.late ? `授業 ${Calc.hm(p.cls)} までに押せば少しだけ経験値` : `${Calc.hm(p.target)} までに押すと大成功のチャンス`}。授業を休むとひよこが死にます</div>
       <button class="big" data-act="c1">☀️ 起きた！</button>`;
   } else if (j.phase === 'wait') {
     body = `<div class="msg">二度寝チェックまで</div><div class="count" data-until="${+j.from}">${mmss(j.from - t)}</div>
@@ -322,7 +347,7 @@ function todayCard(t) {
       <div class="parts">${line(q.wake === 10, q.wake === 3 ? '起きた（目標より遅れ）' : '目標の時間までに起きた', q.wake, j.c1)}
       ${line(q.stay, '二度寝しなかった', q.stay, j.c2)}
       ${line(q.attend === 15, q.attend === 5 ? '授業に出た（遅刻）' : '授業に出た', q.attend, j.c3)}</div>
-      ${r === 'absent' ? '<div class="note">連続記録は半分になったけど、0じゃないよ。次の授業の日にとりかえそう</div>' : ''}</div>`;
+      ${r === 'absent' ? '<div class="note">🪦 授業を休んだので、ひよこは死んでしまいました。新しいたまごからやり直しです</div>' : ''}</div>`;
   }
   return `<section class="card today">${head}${body}</section>`;
 }
@@ -377,15 +402,18 @@ function gardenCard(g, t) {
   const today = Calc.ymd(t), wd = t.getDay();
   const due = S.habits.filter(h => h.days.includes(wd)), did = due.filter(h => (S.hlog[today] || []).includes(h.id));
   const left = S.todos.filter(x => !x.done).length;
+  const overdue = S.todos.filter(x => !x.done && x.due && x.due < today).length;
   return `<section class="card"><div class="pet">
-    <div class="face plant" id="face">${g.stage.face}</div>
-    <div class="info"><div class="name">${g.stage.name} <span class="label">Lv.${g.lv}</span></div>
+    <div class="face plant ${g.wilted ? 'wilt' : ''}" id="face">${g.wilted ? '🥀' : g.stage.face}</div>
+    <div class="info"><div class="name">${g.wilted ? 'しおれた' : ''}${g.stage.name} <span class="label">Lv.${g.lv}</span></div>
       <div class="bar green"><div style="width:${Math.round(g.into / g.need * 100)}%"></div></div>
       <div class="label">次のレベルまで ${g.need - g.into} XP${g.next ? ` ・ Lv.${g.next.lv}で${g.next.face}に` : ''}</div></div></div>
     <div class="stats">
       <div class="stat"><span class="label">今日の日課</span><b>${did.length}<span class="label">/${due.length}</span></b></div>
       <div class="stat"><span class="label">のこりTODO</span><b>${left}</b></div>
-    </div></section>`;
+      <div class="stat"><span class="label">サボりの罰</span><b>${g.penalty ? '−' + g.penalty : 0}<span class="label"> XP</span></b></div>
+    </div>${g.wilted ? `<div class="note warnline">${g.missedY ? `昨日の日課を${g.missedY}つサボったので` : ''}${g.missedY && overdue ? '、' : ''}${overdue ? `期限切れのTODOが${overdue}つあるので` : ''}しおれています。期限切れは1日ごとに−3XP</div>` : ''}
+    <p class="note">日課 +5 ・ TODO +8 ・ 日課をサボると −5 ・ 期限切れTODOは1日 −3</p></section>`;
 }
 function habitsCard(t) {
   const today = Calc.ymd(t), wd = t.getDay(), done = S.hlog[today] || [];
@@ -436,7 +464,7 @@ function render() {
     // 曜日をえらんだりチェックしたりしても、書きかけの入力は消さない
     const keep = [...document.querySelectorAll('form[data-form] input')].map(i => [i.form.dataset.form, i.name, i.value]);
     const focused = document.activeElement && document.activeElement.form && document.activeElement.name ? [document.activeElement.form.dataset.form, document.activeElement.name] : null;
-    $('#app').innerHTML = gardenCard(Calc.garden(S.hlog, S.todos), t) + habitsCard(t) + todosCard(t) + tabsBar();
+    $('#app').innerHTML = gardenCard(Calc.garden(S, Calc.ymd(t)), t) + habitsCard(t) + todosCard(t) + tabsBar();
     keep.forEach(([f, n, v]) => { const i = $(`[data-form=${f}] [name=${n}]`); if (i) i.value = v; });
     if (focused) { const i = $(`[data-form=${focused[0]}] [name=${focused[1]}]`); if (i) i.focus(); }
   } else {
@@ -514,7 +542,7 @@ document.addEventListener('change', e => {
 // TODO・日課の操作
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-t]'); if (!b) return;
-  const t = now(), d = Calc.ymd(t), id = b.dataset.id, before = Calc.garden(S.hlog, S.todos);
+  const t = now(), d = Calc.ymd(t), id = b.dataset.id, before = Calc.garden(S, Calc.ymd(t));
   switch (b.dataset.t) {
     case 'tab': S.tab = b.dataset.v; store.set('ha-tab', S.tab); window.scrollTo(0, 0); break;
     case 'edit': S.edit = !S.edit; break;
@@ -527,7 +555,7 @@ document.addEventListener('click', e => {
     default: return;
   }
   saveTasks(); render();
-  const after = Calc.garden(S.hlog, S.todos);
+  const after = Calc.garden(S, Calc.ymd(t));
   if (after.xp > before.xp) pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : `+${after.xp - before.xp} XP`);
 });
 document.addEventListener('submit', e => {
@@ -535,7 +563,7 @@ document.addEventListener('submit', e => {
   if (f.dataset.form === 'habit') {
     const name = f.elements['name'].value.trim(); if (!name) return;
     if (!S.newDays.length) { alert('やる曜日を1つ以上えらんでね'); return; }
-    S.habits.push({ id: uid(), name, days: [...S.newDays].sort() }); S.newDays = [0, 1, 2, 3, 4, 5, 6];
+    S.habits.push({ id: uid(), name, days: [...S.newDays].sort(), since: Calc.ymd(now()) }); S.newDays = [0, 1, 2, 3, 4, 5, 6];
   } else if (f.dataset.form === 'todo') {
     const text = f.elements['text'].value.trim(); if (!text) return;
     S.todos.push({ id: uid(), text, due: f.elements['due'].value || '', done: null });
