@@ -26,12 +26,12 @@
   body { margin: 0; background: var(--bg); color: var(--ink);
     font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
   main { max-width: 520px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 16px 48px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; }
   .label { font-size: 13px; color: var(--quiet); }
   h2 { font-size: 15px; margin: 0 0 10px; }
   /* キャラクター */
   .pet { display: flex; gap: 14px; align-items: center; }
-  .pet .face { font-size: 64px; line-height: 1; width: 84px; height: 84px; display: grid; place-items: center;
+  .pet .face { font-size: 46px; line-height: 1; width: 64px; height: 64px; display: grid; place-items: center;
     background: var(--accent-soft); border-radius: 24px; flex: none; }
   .pet .face.hop { animation: hop .7s cubic-bezier(.3,1.6,.5,1) 2; }
   @keyframes hop { 40% { transform: translateY(-14px) rotate(-6deg); } }
@@ -39,32 +39,44 @@
   .pet .name { font-weight: 700; font-size: 17px; }
   .bar { height: 8px; background: var(--chip); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
   .bar > div { height: 100%; background: var(--accent); border-radius: 99px; transition: width .6s; }
-  .stats { display: flex; gap: 8px; margin-top: 12px; }
+  .stats { display: flex; gap: 8px; margin-top: 10px; }
   .stat { flex: 1; background: var(--bg); border-radius: 12px; padding: 8px 10px; }
-  .stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+  .stat b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .stat { padding: 6px 10px; }
+  /* 連続記録 */
+  .streak { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 12px; border-radius: 14px; background: var(--chip); }
+  .streak.on { background: linear-gradient(90deg, var(--accent-soft), var(--warn-soft)); }
+  .streak .flame { font-size: 34px; line-height: 1; filter: grayscale(1); opacity: .5; }
+  .streak.on .flame { filter: none; opacity: 1; animation: flick 1.6s ease-in-out infinite; }
+  @keyframes flick { 50% { transform: scale(1.08) rotate(-3deg); } }
+  .streak b { font-size: 34px; font-variant-numeric: tabular-nums; line-height: 1; }
+  .streak b + span { font-weight: 700; margin-left: 2px; }
+  .streak > div:nth-child(2) { white-space: nowrap; }
+  .streak .sub { margin-left: auto; text-align: right; font-size: 12px; color: var(--quiet); }
+  .row2 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   /* 今日 */
   .today .when { font-size: 14px; color: var(--quiet); }
-  .today .msg { font-size: 22px; font-weight: 700; margin: 6px 0 4px; }
+  .today .msg { font-size: 19px; font-weight: 700; margin: 4px 0 2px; }
   .today .hint { font-size: 14px; color: var(--quiet); }
-  .big { display: block; width: 100%; border: 0; border-radius: 20px; padding: 26px 12px; margin-top: 14px;
+  .big { display: block; width: 100%; border: 0; border-radius: 20px; padding: 20px 12px; margin-top: 10px;
     font: inherit; font-size: 26px; font-weight: 800; color: #fff; background: var(--accent); box-shadow: 0 6px 0 #b86f00; }
   .big:active { transform: translateY(4px); box-shadow: 0 2px 0 #b86f00; }
   .big.second { background: var(--good); box-shadow: 0 6px 0 #1f6a44; }
   .big.second:active { box-shadow: 0 2px 0 #1f6a44; }
-  .count { font-size: 44px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin: 6px 0; }
-  .result { border-radius: 14px; padding: 14px; margin-top: 12px; font-size: 15px; }
-  .result.perfect { background: var(--good-soft); } .result.attended { background: var(--warn-soft); }
-  .result.absent { background: var(--bad-soft); }
+  .count { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin: 6px 0; }
+  .result { border-radius: 14px; padding: 10px 12px; margin-top: 8px; font-size: 15px; }
+  .result.perfect { background: var(--good-soft); } .result.half { background: var(--warn-soft); }
+  .result.over { background: var(--bad-soft); }
   .result .parts { margin-top: 8px; display: grid; gap: 2px; }
   .today .btn b { font-variant-numeric: tabular-nums; }
   .result b { font-size: 18px; }
   /* きろく */
   .weeks { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .weeks .wd { text-align: center; font-size: 11px; color: var(--quiet); }
-  .weeks .c { aspect-ratio: 1; border-radius: 8px; display: grid; place-items: center; font-size: 11px; color: var(--quiet); background: none; }
+  .weeks .c { height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 11px; color: var(--quiet); background: none; }
   .weeks .c.cls { background: var(--chip); }
-  .weeks .c.perfect { background: var(--good); color: #fff; } .weeks .c.attended { background: var(--warn); color: #fff; }
-  .weeks .c.absent { background: var(--bad); color: #fff; }
+  .weeks .c.perfect { background: var(--good); color: #fff; } .weeks .c.half { background: var(--warn); color: #fff; }
+  .weeks .c.over { background: var(--bad); color: #fff; }
   .weeks .c.now { outline: 2px solid var(--accent); }
   .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--quiet); margin-top: 10px; }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
@@ -90,13 +102,13 @@
   .pet .face.plant { background: var(--good-soft); }
   .bar.green > div { background: var(--good); }
   /* 日課・TODO */
-  .item { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+  .item { display: flex; gap: 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
   .item:first-of-type { border-top: 0; }
   .item .what { flex: 1; min-width: 0; overflow-wrap: anywhere; }
   .item .what small { display: block; color: var(--quiet); font-size: 12px; }
   .item.off { opacity: .5; }
   .item.donef .what { text-decoration: line-through; color: var(--quiet); }
-  .tick { flex: none; width: 34px; height: 34px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); font-size: 18px; color: #fff; display: grid; place-items: center; }
+  .tick { flex: none; width: 30px; height: 30px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); font-size: 18px; color: #fff; display: grid; place-items: center; }
   .tick.on { background: var(--good); border-color: var(--good); }
   .del { flex: none; border: 0; background: none; color: var(--quiet); font-size: 18px; width: 32px; height: 32px; }
   .fire { font-size: 12px; color: var(--accent); font-weight: 700; white-space: nowrap; }
@@ -119,6 +131,15 @@
   .head { display: flex; justify-content: space-between; align-items: baseline; }
   .head .linkbtn { color: var(--accent); margin: 0; }
   .empty { color: var(--quiet); font-size: 14px; padding: 6px 0; }
+  /* PC: 早起き・日課・TODOを3列に並べ、タブは出さない */
+  .cols { display: block; }
+  @media (min-width: 1000px) {
+    main { max-width: 1320px; padding-bottom: 24px; }
+    .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    .tabs { display: none; }
+  }
+  .status { text-align: center; font-size: 12px; color: var(--quiet); margin-top: 8px; }
+  .grid input[type=text] { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); width: 100%; min-width: 0; }
   .graves { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px; font-size: 13px; padding-top: 10px; border-top: 1px dashed var(--line); }
   .pet .face.wilt { background: var(--bad-soft); filter: saturate(.6); }
   .warnline { color: var(--bad); }
@@ -130,11 +151,12 @@
 // ---- 計算(画面と切り離した純粋な関数) ----
 const MIN = 60000;
 const WIN = 20;   // 2回目のチェックインを押せる長さ(分)
-const EARLY = 15, LATE = 30;   // 「授業に出た」を押せるのは授業の15分前から30分後まで
+const XP = { perfect: 20, half: 5, over: 0 };
+const BONUS = 7, BONUS_XP = 30;   // 7日続くごとにボーナス
 const RESULT = {
-  perfect: '大成功！ 早起きして、二度寝せず、授業に出た',
-  attended: '授業には出られた',
-  absent: '授業を休んだ…',
+  perfect: '大成功！ 早起きして、二度寝もしなかった',
+  half: '起きたけど、二度寝チェックを押せなかった',
+  over: '寝坊…',
 };
 // レベルごとの姿。lv はその姿になるレベル
 const STAGES = [
@@ -154,59 +176,53 @@ const Calc = {
   hm(d) { return this.pad(d.getHours()) + ':' + this.pad(d.getMinutes()); },
   parse(ymd) { const [y, m, d] = ymd.split('-').map(Number); return new Date(y, m - 1, d); },
   addDays(ymd, k) { const d = this.parse(ymd); d.setDate(d.getDate() + k); return this.ymd(d); },
-  // その日の授業・目標起床・チェックインを押せるようになる時刻。授業がない日は null
+  // その日の目標起床と、「起きた！」を押せるようになる時刻。目標がない日は null
   plan(ymd, s) {
-    const t = s.classes[this.parse(ymd).getDay()];
+    const t = s.wake[this.parse(ymd).getDay()];
     if (!t) return null;
     const [h, m] = t.split(':').map(Number);
-    const cls = this.parse(ymd); cls.setHours(h, m, 0, 0);
-    const target = new Date(cls - s.lead * MIN);
-    return { cls, target, open: new Date(target - 90 * MIN) };
+    const target = this.parse(ymd); target.setHours(h, m, 0, 0);
+    return { target, open: new Date(target - 90 * MIN), close: new Date(+target + MIN) };
   },
-  // 今どの段階か(phase)と、決まっていれば結果(result)と経験値の内訳(parts)
-  // 流れ: 起きた(c1) → 二度寝チェック(c2) → 授業に出た(c3)
+  // 今どの段階か(phase)と、決まっていれば結果(result)
+  // 流れ: 目標の時間までに「起きた！」(c1) → 15分後に「まだ起きてる！」(c2)
   judge(p, rec, now, s) {
     if (!p) return { phase: 'off' };
     rec = rec || {};
-    const [c1, c2, c3] = ['c1', 'c2', 'c3'].map(k => rec[k] ? new Date(rec[k]) : null);
-    const aOpen = new Date(p.cls - EARLY * MIN), aClose = new Date(+p.cls + LATE * MIN);
-    const from = c1 && new Date(+c1 + s.gap * MIN), until = c1 && new Date(+from + WIN * MIN);
-    if (c3 || now >= aClose) {
-      const parts = {
-        wake: !c1 ? 0 : c1 < +p.target + MIN ? 10 : 3,
-        stay: c2 ? 10 : 0,
-        attend: !c3 ? 0 : c3 < +p.cls + 6 * MIN ? 15 : 5,
-      };
-      const result = !c3 ? 'absent' : parts.wake === 10 && parts.stay && parts.attend === 15 ? 'perfect' : 'attended';
-      return { phase: 'done', result, parts, xp: parts.wake + parts.stay + parts.attend, c1, c2, c3 };
+    const c1 = rec.c1 ? new Date(rec.c1) : null, c2 = rec.c2 ? new Date(rec.c2) : null;
+    if (!c1 || c1 >= p.close) {
+      if (now < p.open) return { phase: 'early' };
+      if (now < p.close) return { phase: 'wake' };
+      return { phase: 'done', result: 'over', xp: 0 };
     }
-    if (!c1 && now < p.open) return { phase: 'early' };
-    if (!c1 && now < p.cls) return { phase: 'wake', late: now > p.target, aOpen };
-    const canC2 = c1 && !c2 && now >= from && now < until;
-    if (now >= aOpen) return { phase: 'attend', canC2, until, aClose, c1 };
-    if (c1 && !c2 && now < from) return { phase: 'wait', from, c1 };
-    if (canC2) return { phase: 'second', until, c1 };
-    return { phase: 'go', aOpen, c1 };
+    const from = new Date(+c1 + s.gap * MIN), until = new Date(+from + WIN * MIN);
+    if (c2) return { phase: 'done', result: 'perfect', xp: XP.perfect, c1, c2 };
+    if (now < from) return { phase: 'wait', from, c1 };
+    if (now < until) return { phase: 'second', until, c1 };
+    return { phase: 'done', result: 'half', xp: XP.half, c1 };
   },
   // 使い始めた日から今日までを順に見て、経験値と連続記録を数える
-  // 大成功で連続+1。授業を休んだらひよこは死んで、お墓に入り、たまごからやり直し(経験値も連続も0)
+  // 大成功で連続+1(7日ごとにボーナス)、二度寝で連続は0。寝坊したらひよこは死んで、お墓に入り、たまごからやり直し
   stats(log, s, now) {
     const today = this.ymd(now);
-    let xp = 0, streak = 0, best = 0, perfect = 0, days = 0;
+    let xp = 0, streak = 0, best = 0, perfect = 0, days = 0, bonus = 0;
     const graves = [];
     for (let d = s.start; d <= today; d = this.addDays(d, 1)) {
       const j = this.judge(this.plan(d, s), log[d], now, s);
       if (!j.result) continue;
       days++; xp += j.xp;
-      if (j.result === 'perfect') { streak++; perfect++; }
+      if (j.result === 'perfect') {
+        streak++; perfect++;
+        if (streak % BONUS === 0) { xp += BONUS_XP; bonus++; }
+      } else streak = 0;
       best = Math.max(best, streak);
-      if (j.result === 'absent') {
+      if (j.result === 'over') {
         const L = this.level(xp);
         graves.push({ day: d, lv: L.lv, face: L.stage.face, name: L.stage.name });
-        xp = 0; streak = 0;
+        xp = 0;
       }
     }
-    return { xp, streak, best, perfect, days, graves, gen: graves.length + 1, ...this.level(xp) };
+    return { xp, streak, best, perfect, days, bonus, graves, gen: graves.length + 1, toBonus: BONUS - streak % BONUS, ...this.level(xp) };
   },
   // レベル1→2は40、そこから1レベルごとに必要な経験値が20ずつ増える
   level(xp, stages = STAGES) {
@@ -256,7 +272,7 @@ const Calc = {
     }
     return n;
   },
-  // カレンダー用(.ics)。授業の曜日ごとに、目標起床の時刻と2回目の時刻に通知が鳴る予定を毎週くり返す
+  // カレンダー用(.ics)。曜日ごとに、目標起床の時刻と2回目の時刻に通知が鳴る予定を毎週くり返す
   ics(s, now) {
     const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//hayaoki//JA', 'CALSCALE:GREGORIAN'];
     const stamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
@@ -268,10 +284,9 @@ const Calc = {
       lines.push('BEGIN:VEVENT', 'UID:hayaoki-' + by + '@1624mhi222.github.io', 'DTSTAMP:' + stamp,
         'DTSTART:' + f(t), 'DTEND:' + f(new Date(+t + (s.gap + 5) * MIN)), 'RRULE:FREQ=WEEKLY;BYDAY=' + by,
         'SUMMARY:☀️ 早起きアプリで「起きた！」を押す',
-        'DESCRIPTION:授業 ' + this.hm(p.cls) + '。' + s.gap + '分後に「まだ起きてる！」、授業に着いたら「授業に出た！」を押す',
+        'DESCRIPTION:' + s.gap + '分後に「まだ起きてる！」も押す',
         'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:起きた！を押す', 'TRIGGER:PT0M', 'END:VALARM',
         'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:まだ起きてる？2回目を押す', 'TRIGGER:PT' + s.gap + 'M', 'END:VALARM',
-        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:授業が始まる。着いたら「授業に出た」を押す', 'TRIGGER:PT' + Math.max(0, s.lead - EARLY) + 'M', 'END:VALARM',
         'END:VEVENT');
     }
     lines.push('END:VCALENDAR');
@@ -289,7 +304,7 @@ const shift = (q => q ? new Date(q) - Date.now() : 0)(new URLSearchParams(locati
 const now = () => new Date(Date.now() + shift);
 
 const S = {
-  settings: store.get('ha-settings', null) || { classes: { 1: '08:00', 3: '08:00', 5: '10:00' }, lead: 60, gap: 15, start: Calc.ymd(now()) },
+  settings: store.get('ha-settings', null) || { wake: { 0: '07:00', 1: '07:00', 2: '07:00', 3: '07:00', 4: '07:00', 5: '09:00', 6: '07:00' }, gap: 15, start: Calc.ymd(now()) },
   log: store.get('ha-log', {}),
   tab: store.get('ha-tab', 'wake'),
   habits: store.get('ha-habits', []),     // { id, name, days: [曜日の数字] }
@@ -297,11 +312,121 @@ const S = {
   todos: store.get('ha-todos', []),       // { id, text, due, done }
   edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false, bulk: false, newEvery: false, editing: null, ed: { every: 0, days: [] },
 };
-const saveTasks = () => { store.set('ha-habits', S.habits); store.set('ha-hlog', S.hlog); store.set('ha-todos', S.todos); };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const saveSettings = () => store.set('ha-settings', S.settings);
-const saveLog = () => store.set('ha-log', S.log);
-saveSettings();
+// 前は「授業の時間 − 何分前」で起床時間を決めていた。曜日ごとの起床時間(wake)に置きかえる
+function migrate(st) {
+  if (st.wake) return st;
+  const c = st.classes || {}, lead = st.lead || 60, w = {};
+  for (let d = 0; d < 7; d++) {
+    if (!c[d]) { w[d] = '07:00'; continue; }
+    const [h, m] = c[d].split(':').map(Number), x = new Date(2000, 0, 1, h, m - lead);
+    w[d] = Calc.hm(x);
+  }
+  st.wake = w;
+  return st;
+}
+migrate(S.settings);
+S.hlogU = store.get('ha-hlogu', {});     // 日課のチェックを日ごとに最後に変えた時刻
+S.dead = store.get('ha-dead', {});       // 消した日課・TODO { id: { u } }
+const persist = () => {
+  store.set('ha-settings', S.settings); store.set('ha-log', S.log); store.set('ha-habits', S.habits); store.set('ha-hlog', S.hlog);
+  store.set('ha-todos', S.todos); store.set('ha-hlogu', S.hlogU); store.set('ha-dead', S.dead);
+};
+// どこを変えても、保存のときに前回とくらべて変わったものに更新時刻(u)をつけ、スプレッドシートに送る
+const save = () => { Sync.stamp(); persist(); Sync.soon(); };
+const saveTasks = save, saveSettings = save, saveLog = save;
+
+// ---- スプレッドシートとの同期 ----
+// 記録は種類ごとに { id: 中身 } にして送る。同じものは更新時刻(u)が新しいほうが勝つ
+const KINDS = ['settings', 'log', 'hlog', 'habits', 'todos'];
+const bare = v => { const c = Object.assign({}, v); delete c.u; return JSON.stringify(c); };
+const Sync = {
+  conf: store.get('ha-api', null),       // { url, key }
+  seen: store.get('ha-seen', null),      // 前回の中身 { kind: { id: JSON } }
+  status: '', busy: false, again: false, timer: null,
+  doc() {
+    const byId = l => Object.fromEntries(l.map(x => [x.id, x]));
+    return {
+      settings: { main: S.settings }, log: Object.assign({}, S.log),
+      hlog: Object.fromEntries(Object.keys(S.hlog).map(d => [d, { ids: S.hlog[d], u: S.hlogU[d] || 0 }])),
+      habits: byId(S.habits), todos: byId(S.todos), dead: Object.assign({}, S.dead),
+    };
+  },
+  snapshot(doc) { const o = {}; KINDS.forEach(k => { o[k] = {}; Object.keys(doc[k]).forEach(id => o[k][id] = bare(doc[k][id])); }); return o; },
+  stamp() {
+    const doc = this.doc(), t = Date.now();
+    if (!this.seen) { this.seen = this.snapshot(doc); store.set('ha-seen', this.seen); return; }
+    KINDS.forEach(k => {
+      const before = this.seen[k] || {};
+      Object.keys(doc[k]).forEach(id => {
+        if (before[id] === bare(doc[k][id])) return;
+        if (k === 'hlog') S.hlogU[id] = t; else if (k === 'settings') S.settings.u = t; else doc[k][id].u = t;
+      });
+      Object.keys(before).forEach(id => {
+        if (id in doc[k]) return;
+        if (k === 'habits' || k === 'todos') S.dead[id] = { u: t };
+        else if (k === 'log') S.log[id] = { u: t };
+        else if (k === 'hlog') { S.hlog[id] = []; S.hlogU[id] = t; }
+      });
+    });
+    this.seen = this.snapshot(this.doc()); store.set('ha-seen', this.seen);
+  },
+  merge(a, b) {
+    const o = {};
+    [...KINDS, 'dead'].forEach(k => {
+      o[k] = Object.assign({}, a[k]);
+      Object.keys(b[k] || {}).forEach(id => { if (!o[k][id] || (b[k][id].u || 0) > (o[k][id].u || 0)) o[k][id] = b[k][id]; });
+    });
+    return o;
+  },
+  apply(doc) {
+    if (doc.settings.main) S.settings = migrate(doc.settings.main);
+    S.log = doc.log;
+    S.hlog = Object.fromEntries(Object.keys(doc.hlog).map(d => [d, doc.hlog[d].ids || []]));
+    S.hlogU = Object.fromEntries(Object.keys(doc.hlog).map(d => [d, doc.hlog[d].u || 0]));
+    S.dead = doc.dead;
+    S.habits = Object.values(doc.habits).filter(x => !S.dead[x.id]);
+    S.todos = Object.values(doc.todos).filter(x => !S.dead[x.id]);
+    this.seen = this.snapshot(this.doc()); store.set('ha-seen', this.seen);
+    persist();
+  },
+  soon(ms = 1500) { if (!this.conf) return; clearTimeout(this.timer); this.timer = setTimeout(() => this.run(), ms); },
+  async run() {
+    if (!this.conf) return;
+    if (this.busy) { this.again = true; return; }
+    this.busy = true; this.again = false;
+    try {
+      const got = await callApi(this.conf, 'sync', [this.doc()]);
+      this.stamp();                                   // 送っているあいだに変わったものも残す
+      const mine = JSON.stringify(this.doc());
+      const merged = this.merge(got, this.doc());     // 同じ時刻ならシートのほうを使う
+      this.apply(merged);
+      this.status = '同期 ' + Calc.hm(new Date());
+      if (JSON.stringify(this.doc()) !== mine && !(document.activeElement && document.activeElement.matches('input, textarea'))) render();
+    } catch (e) {
+      this.status = e.server ? '同期できません: ' + e.message : 'オフライン（つながったら送ります）';
+    } finally {
+      this.busy = false;
+      const el = $('#syncstatus'); if (el) el.textContent = this.status;
+      if (this.again) this.soon(300);
+    }
+  },
+};
+async function callApi(conf, name, args) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 25000);
+  try {
+    // text/plain にすると事前確認(CORS preflight)なしで Apps Script に届く
+    const res = await fetch(conf.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ key: conf.key, fn: name, args }), redirect: 'follow', signal: ctl.signal });
+    const text = await res.text();
+    let out;
+    try { out = JSON.parse(text); } catch (e) { const err = new Error('URLが違うか、デプロイのアクセスが「全員」になっていません'); err.server = true; throw err; }
+    if (!out.ok) { const err = new Error(out.error); err.server = true; throw err; }
+    return out.result;
+  } finally { clearTimeout(timer); }
+}
+save();
 
 // ---- 画面 ----
 const $ = s => document.querySelector(s);
@@ -317,70 +442,55 @@ function petCard(st) {
     <div class="info"><div class="name">${st.gen > 1 ? `<span class="label">${st.gen}代目</span> ` : ''}${st.stage.name} <span class="label">Lv.${st.lv}</span></div>
       <div class="bar"><div style="width:${pct}%"></div></div>
       <div class="label">次のレベルまで ${st.need - st.into} XP${st.next ? ` ・ Lv.${st.next.lv}で${st.next.face}に進化` : ''}</div></div></div>
-    <div class="stats">
-      <div class="stat"><span class="label">🔥 連続成功</span><b>${st.streak}</b></div>
-      <div class="stat"><span class="label">最高記録</span><b>${st.best}</b></div>
-      <div class="stat"><span class="label">大成功</span><b>${st.perfect}<span class="label">/${st.days}回</span></b></div>
-    </div>${graves}</section>`;
+    <div class="streak ${st.streak ? 'on' : ''}"><div class="flame">🔥</div><div><b>${st.streak}</b><span>日連続</span></div>
+      <div class="sub">最高 ${st.best}日 ・ あと${st.toBonus}日でボーナス +${BONUS_XP}XP<br>大成功 ${st.perfect}/${st.days}回</div></div>${graves}</section>`;
 }
 
 function todayCard(t) {
   const d = Calc.ymd(t), p = Calc.plan(d, S.settings), j = Calc.judge(p, S.log[d], t, S.settings);
   let head = `<div class="when">${t.getMonth() + 1}月${t.getDate()}日(${WD[t.getDay()]})`;
-  if (p) head += ` ・ 授業 ${Calc.hm(p.cls)} ・ 目標起床 <b>${Calc.hm(p.target)}</b>`;
+  if (p) head += ` ・ 目標起床 <b>${Calc.hm(p.target)}</b>`;
   head += '</div>';
   let body = '';
   if (j.phase === 'off') {
-    const nx = nextClass(d);
-    body = `<div class="msg">今日は授業なし 🌙</div><div class="hint">${nx ? `次は ${nx}。前の日は早めに寝よう` : '設定で授業の時間を入れてね'}</div>`;
+    const nx = nextWake(d);
+    body = `<div class="msg">今日は目標なし 🌙</div><div class="hint">${nx ? `次は ${nx}。前の日は早めに寝よう` : '設定で起きる時間を入れてね'}</div>`;
   } else if (j.phase === 'early') {
-    body = `<div class="msg">まだ早いよ</div><div class="hint">${Calc.hm(p.open)} から押せるようになります</div>`;
+    body = `<div class="msg">まだ早いよ 🌙</div><div class="hint">${Calc.hm(p.open)} から押せるようになります。寝坊するとひよこが死にます</div>`;
   } else if (j.phase === 'wake') {
-    body = `<div class="msg">${j.late ? '目標を過ぎてる！急いで' : 'おはよう！'}</div>
-      <div class="hint">${j.late ? `授業 ${Calc.hm(p.cls)} までに押せば少しだけ経験値` : `${Calc.hm(p.target)} までに押すと大成功のチャンス`}。授業を休むとひよこが死にます</div>
+    body = `<div class="hint">あと <b data-until="${+p.close}">${mmss(p.close - t)}</b> 以内に押してね。間に合わないとひよこが死にます</div>
       <button class="big" data-act="c1">☀️ 起きた！</button>`;
   } else if (j.phase === 'wait') {
-    body = `<div class="msg">二度寝チェックまで</div><div class="count" data-until="${+j.from}">${mmss(j.from - t)}</div>
-      <div class="hint">布団から出て、顔を洗ったり着替えたりしておこう。${Calc.hm(j.from)} から ${WIN}分のあいだに「まだ起きてる！」を押してね。<br>スマホのタイマーを${S.settings.gap}分にしておくと確実です。</div>`;
+    body = `<div class="row2"><div class="msg">二度寝チェックまで</div><div class="count" data-until="${+j.from}">${mmss(j.from - t)}</div></div>
+      <div class="hint">布団から出て、顔を洗ったり着替えたりしておこう。${Calc.hm(j.from)} から ${WIN}分のあいだに「まだ起きてる！」を押してね。スマホのタイマーを${S.settings.gap}分にしておくと確実です。</div>`;
   } else if (j.phase === 'second') {
-    body = `<div class="msg">まだ起きてる？</div><div class="hint">あと <b data-until="${+j.until}">${mmss(j.until - t)}</b> 以内に押してね</div>
+    body = `<div class="hint">あと <b data-until="${+j.until}">${mmss(j.until - t)}</b> 以内に押してね。押せないと連続記録が0に戻ります</div>
       <button class="big second" data-act="c2">💪 まだ起きてる！</button>`;
-  } else if (j.phase === 'go') {
-    body = `<div class="msg">準備して出発しよう 🎒</div><div class="hint">授業まで</div><div class="count" data-until="${+p.cls}">${mmss(p.cls - t)}</div>
-      <div class="hint">${Calc.hm(j.aOpen)} から「授業に出た！」を押せます。教室に着いたら（オンラインなら授業に入ったら）押してね。</div>`;
-  } else if (j.phase === 'attend') {
-    const late = t > +p.cls + 5 * MIN;
-    body = `<div class="msg">${late ? '遅れても、出れば経験値！' : j.c1 ? '授業に着いた？' : '寝坊しても、今から出よう'}</div>
-      <div class="hint">${Calc.hm(j.aClose)} まで押せます${late ? '' : `。${Calc.hm(new Date(+p.cls + 5 * MIN))} までなら時間どおり`}</div>
-      <button class="big second" data-act="c3">🎓 授業に出た！</button>
-      ${j.canC2 ? `<button class="btn" data-act="c2">💪 まだ起きてる！（2回目）あと <b data-until="${+j.until}">${mmss(j.until - t)}</b></button>` : ''}`;
   } else {
-    const r = j.result, q = j.parts;
-    const line = (ok, label, pts, time) => `<div>${ok ? '✅' : '▫️'} ${label}${time ? ` <span class="label">${Calc.hm(time)}</span>` : ''} <b class="label">+${pts}</b></div>`;
-    body = `<div class="result ${r}"><b>${r === 'perfect' ? '🎉 ' : ''}${RESULT[r]}</b> <span>+${j.xp} XP</span>
-      <div class="parts">${line(q.wake === 10, q.wake === 3 ? '起きた（目標より遅れ）' : '目標の時間までに起きた', q.wake, j.c1)}
-      ${line(q.stay, '二度寝しなかった', q.stay, j.c2)}
-      ${line(q.attend === 15, q.attend === 5 ? '授業に出た（遅刻）' : '授業に出た', q.attend, j.c3)}</div>
-      ${r === 'absent' ? '<div class="note">🪦 授業を休んだので、ひよこは死んでしまいました。新しいたまごからやり直しです</div>' : ''}</div>`;
+    const r = j.result;
+    const times = [j.c1 && `起きた ${Calc.hm(j.c1)}`, j.c2 && `2回目 ${Calc.hm(j.c2)}`].filter(Boolean).join(' ・ ');
+    body = `<div class="result ${r}"><b>${r === 'perfect' ? '🎉 ' : ''}${RESULT[r]}</b> <span>+${j.xp} XP</span>${times ? `<div class="label">${times}</div>` : ''}
+      ${r === 'over' ? '<div class="note">🪦 寝坊したので、ひよこは死んでしまいました。新しいたまごからやり直しです</div>' : ''}
+      ${r === 'half' ? '<div class="note">連続記録は0に戻りました</div>' : ''}</div>`;
   }
   return `<section class="card today">${head}${body}</section>`;
 }
 
-function nextClass(d) {
+function nextWake(d) {
   for (let k = 1; k <= 7; k++) {
     const x = Calc.addDays(d, k), p = Calc.plan(x, S.settings);
-    if (p) return `${WD[p.cls.getDay()]}曜 ${Calc.hm(p.cls)}の授業（${Calc.hm(p.target)}起床）`;
+    if (p) return `${WD[p.target.getDay()]}曜 ${Calc.hm(p.target)}起床`;
   }
   return null;
 }
 
-// 直近5週間。月曜はじまり
+// 直近4週間。月曜はじまり
 function weeksCard(t) {
   const today = Calc.ymd(t);
   const back = (t.getDay() + 6) % 7;
-  const first = Calc.addDays(today, -back - 28);
+  const first = Calc.addDays(today, -back - 21);
   let cells = ['月', '火', '水', '木', '金', '土', '日'].map(w => `<div class="wd">${w}</div>`).join('');
-  for (let k = 0; k < 35; k++) {
+  for (let k = 0; k < 28; k++) {
     const d = Calc.addDays(first, k), p = Calc.plan(d, S.settings);
     let cls = 'c';
     if (p && d >= S.settings.start && d <= today) {
@@ -391,22 +501,27 @@ function weeksCard(t) {
     cells += `<div class="${cls}">${Number(d.slice(8))}</div>`;
   }
   return `<section class="card"><h2>きろく</h2><div class="weeks">${cells}</div>
-    <div class="legend"><span><i style="background:var(--good)"></i>大成功</span><span><i style="background:var(--warn)"></i>出席できた</span>
-    <span><i style="background:var(--bad)"></i>欠席</span><span><i style="background:var(--chip)"></i>授業の日</span></div></section>`;
+    <div class="legend"><span><i style="background:var(--good)"></i>大成功</span><span><i style="background:var(--warn)"></i>二度寝</span>
+    <span><i style="background:var(--bad)"></i>寝坊</span><span><i style="background:var(--chip)"></i>目標がある日</span></div></section>`;
 }
 
 function settingsCard() {
   const s = S.settings;
-  const rows = [1, 2, 3, 4, 5, 6, 0].map(w => `<label>${WD[w]}曜</label><input type="time" data-wd="${w}" value="${s.classes[w] || ''}">`).join('');
+  const rows = [1, 2, 3, 4, 5, 6, 0].map(w => `<label>${WD[w]}曜</label><input type="time" data-wd="${w}" value="${s.wake[w] || ''}">`).join('');
   return `<section class="card"><details><summary>設定</summary>
-    <p class="note">授業がある曜日に、始まる時間を入れてください。空欄の日は授業なしです。</p>
+    <p class="note">曜日ごとに、起きる目標の時間を入れてください。空欄の日はお休みです。</p>
     <div class="grid">${rows}
-      <label>授業の何分前に起きる</label><input type="number" min="10" max="240" step="5" data-k="lead" value="${s.lead}">
       <label>2回目までの分数</label><input type="number" min="5" max="60" step="1" data-k="gap" value="${s.gap}">
     </div>
     <button class="btn main" data-act="ics">📅 カレンダーに通知を入れる</button>
-    <p class="note">授業の曜日の起床時間と${s.gap}分後に通知が出る予定を、毎週くり返しで追加します。アプリを閉じていても知らせてくれます。時間を変えたら、前の予定を消してから入れ直してください。</p>
+    <p class="note">曜日ごとの起床時間と${s.gap}分後に通知が出る予定を、毎週くり返しで追加します。アプリを閉じていても知らせてくれます。時間を変えたら、前の予定を消してから入れ直してください。</p>
     <button class="btn" data-act="notify">🔔 アプリを開いているときの通知を許可</button>
+    <h2 style="margin-top:18px">スプレッドシート連携</h2>
+    <p class="note">記録をGoogleスプレッドシートに置くと、スマホとPCで同じ記録になり、ObsidianやClaudeからTODOを足せます。</p>
+    <div class="grid"><label>URL</label><input type="text" id="apiurl" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(Sync.conf ? Sync.conf.url : '')}">
+      <label>合言葉</label><input type="text" id="apikey" value="${esc(Sync.conf ? Sync.conf.key : '')}" autocomplete="off"></div>
+    <button class="btn main" data-act="api">${Sync.conf ? 'つなぎ直す' : 'つなぐ'}</button>
+    ${Sync.conf ? '<button class="linkbtn" data-act="apioff" style="color:var(--quiet)">連携をやめる（記録はこの端末に残ります）</button>' : ''}
     <button class="linkbtn" data-act="reset">きろくを全部消す</button>
   </details></section>`;
 }
@@ -418,7 +533,7 @@ function gardenCard(g, t) {
   const left = S.todos.filter(x => !x.done).length;
   const overdue = S.todos.filter(x => !x.done && x.due && x.due < today).length;
   return `<section class="card"><div class="pet">
-    <div class="face plant ${g.wilted ? 'wilt' : ''}" id="face">${g.wilted ? '🥀' : g.stage.face}</div>
+    <div class="face plant ${g.wilted ? 'wilt' : ''}" id="face2">${g.wilted ? '🥀' : g.stage.face}</div>
     <div class="info"><div class="name">${g.wilted ? 'しおれた' : ''}${g.stage.name} <span class="label">Lv.${g.lv}</span></div>
       <div class="bar green"><div style="width:${Math.round(g.into / g.need * 100)}%"></div></div>
       <div class="label">次のレベルまで ${g.need - g.into} XP${g.next ? ` ・ Lv.${g.next.lv}で${g.next.face}に` : ''}</div></div></div>
@@ -484,33 +599,33 @@ function todosCard(t) {
   </section>`;
 }
 function tabsBar() {
-  return `<nav class="tabs"><button class="${S.tab === 'wake' ? 'on' : ''}" data-t="tab" data-v="wake">🐤 早起き</button>
+  return `${Sync.conf ? `<div class="status" id="syncstatus">${esc(Sync.status)}</div>` : ''}<nav class="tabs"><button class="${S.tab === 'wake' ? 'on' : ''}" data-t="tab" data-v="wake">🐤 早起き</button>
     <button class="${S.tab === 'tasks' ? 'on' : ''}" data-t="tab" data-v="tasks">🌱 TODO・日課</button></nav>`;
 }
 
+const WIDE = window.matchMedia('(min-width: 1000px)');
+WIDE.addEventListener && WIDE.addEventListener('change', () => render());
 let lastPhase = null;
 function render() {
   const t = now();
   const open = $('details') && $('details').open;
-  if (S.tab === 'tasks') {
-    // 曜日をえらんだりチェックしたりしても、書きかけの入力は消さない
-    const keep = [...document.querySelectorAll('form[data-form] input, form[data-form] textarea')].map(i => [i.form.dataset.form, i.name, i.value]);
-    const focused = document.activeElement && document.activeElement.form && document.activeElement.name ? [document.activeElement.form.dataset.form, document.activeElement.name] : null;
-    $('#app').innerHTML = gardenCard(Calc.garden(S, Calc.ymd(t)), t) + habitsCard(t) + todosCard(t) + tabsBar();
-    keep.forEach(([f, n, v]) => { const i = $(`[data-form=${f}] [name=${n}]`); if (i) i.value = v; });
-    if (focused) { const i = $(`[data-form=${focused[0]}] [name=${focused[1]}]`); if (i) i.focus(); }
-  } else {
-    const st = Calc.stats(S.log, S.settings, t);
-    $('#app').innerHTML = petCard(st) + todayCard(t) + weeksCard(t) + settingsCard() + tabsBar();
-    if (open) $('details').open = true;
-  }
+  // 曜日をえらんだりチェックしたりしても、書きかけの入力は消さない
+  const keep = [...document.querySelectorAll('form[data-form] input, form[data-form] textarea')].map(i => [i.form.dataset.form, i.name, i.value]);
+  const focused = document.activeElement && document.activeElement.form && document.activeElement.name ? [document.activeElement.form.dataset.form, document.activeElement.name] : null;
+  const wake = () => petCard(Calc.stats(S.log, S.settings, t)) + todayCard(t) + weeksCard(t) + settingsCard();
+  const habits = () => gardenCard(Calc.garden(S, Calc.ymd(t)), t) + habitsCard(t);
+  if (WIDE.matches) $('#app').innerHTML = `<div class="cols"><div>${wake()}</div><div>${habits()}</div><div>${todosCard(t)}</div></div>` + tabsBar();
+  else $('#app').innerHTML = (S.tab === 'tasks' ? habits() + todosCard(t) : wake()) + tabsBar();
+  keep.forEach(([f, n, v]) => { const i = $(`[data-form=${f}] [name=${n}]`); if (i) i.value = v; });
+  if (focused) { const i = $(`[data-form=${focused[0]}] [name=${focused[1]}]`); if (i) i.focus(); }
+  if (open && $('details')) $('details').open = true;
   lastPhase = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings).phase;
 }
 
-function pop(text) {
+function pop(text, sel = '#face') {
   const el = document.createElement('div'); el.className = 'pop'; el.textContent = text;
   document.body.appendChild(el); setTimeout(() => el.remove(), 1700);
-  const f = $('#face'); if (f) { f.classList.remove('hop'); void f.offsetWidth; f.classList.add('hop'); }
+  const f = $(sel); if (f) { f.classList.remove('hop'); void f.offsetWidth; f.classList.add('hop'); }
 }
 
 // 開いたままにしているとき、2回目の時間になったら音と通知で知らせる
@@ -539,7 +654,7 @@ function beep() {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const t = now(), d = Calc.ymd(t), act = b.dataset.act;
-  if (act === 'c1' || act === 'c2' || act === 'c3') {
+  if (act === 'c1' || act === 'c2') {
     const before = Calc.stats(S.log, S.settings, t);
     S.log[d] = Object.assign({}, S.log[d], { [act]: t.toISOString() });
     saveLog();
@@ -549,8 +664,8 @@ document.addEventListener('click', e => {
     }
     render();
     const after = Calc.stats(S.log, S.settings, t);
-    if (act === 'c3') pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : `+${after.xp - before.xp} XP`);
-    else pop(act === 'c1' ? 'おはよう！' : 'えらい！');
+    if (act === 'c2') pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : after.streak % BONUS === 0 ? `🔥${after.streak}日連続！ +${after.xp - before.xp} XP` : `+${after.xp - before.xp} XP`);
+    else pop('おはよう！');
   } else if (act === 'ics') {
     const blob = new Blob([Calc.ics(S.settings, t)], { type: 'text/calendar' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hayaoki.ics'; a.click();
@@ -558,6 +673,13 @@ document.addEventListener('click', e => {
   } else if (act === 'notify') {
     try { Notification.requestPermission().then(p => alert(p === 'granted' ? '許可しました' : '許可されませんでした')); }
     catch (err) { alert('この端末では通知を使えません'); }
+  } else if (act === 'api') {
+    const url = $('#apiurl').value.trim(), key = $('#apikey').value.trim();
+    if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(url) || !key) { alert('Apps ScriptのURL（https://script.google.com/…/exec）と合言葉を入れてね'); return; }
+    Sync.conf = { url, key }; store.set('ha-api', Sync.conf);
+    Sync.status = 'つないでいます…'; render(); Sync.run();
+  } else if (act === 'apioff') {
+    if (confirm('スプレッドシート連携をやめますか？')) { Sync.conf = null; store.set('ha-api', null); Sync.status = ''; render(); }
   } else if (act === 'reset') {
     if (confirm('きろくと経験値を全部消します。よいですか？')) { S.log = {}; S.settings.start = d; saveLog(); saveSettings(); render(); }
   }
@@ -565,7 +687,7 @@ document.addEventListener('click', e => {
 
 document.addEventListener('change', e => {
   const el = e.target;
-  if (el.dataset.wd) { if (el.value) S.settings.classes[el.dataset.wd] = el.value; else delete S.settings.classes[el.dataset.wd]; }
+  if (el.dataset.wd) { if (el.value) S.settings.wake[el.dataset.wd] = el.value; else delete S.settings.wake[el.dataset.wd]; }
   else if (el.dataset.k) { const v = Number(el.value); if (v > 0) S.settings[el.dataset.k] = v; }
   else return;
   saveSettings(); render();
@@ -589,7 +711,7 @@ document.addEventListener('click', e => {
     case 'emode': S.ed.every = b.dataset.v === '1' ? (S.ed.every || 3) : 0; if (!S.ed.every && !S.ed.days.length) S.ed.days = [0, 1, 2, 3, 4, 5, 6]; break;
     case 'eday': { const v = Number(b.dataset.d); S.ed.days = S.ed.days.includes(v) ? S.ed.days.filter(x => x !== v) : [...S.ed.days, v]; break; }
     case 'day': { const v = Number(b.dataset.d); S.newDays = S.newDays.includes(v) ? S.newDays.filter(x => x !== v) : [...S.newDays, v]; break; }
-    case 'hcheck': { const l = S.hlog[d] || []; S.hlog[d] = l.includes(id) ? l.filter(x => x !== id) : [...l, id]; if (!S.hlog[d].length) delete S.hlog[d]; break; }
+    case 'hcheck': { const l = S.hlog[d] || []; S.hlog[d] = l.includes(id) ? l.filter(x => x !== id) : [...l, id]; break; }
     case 'hdel': { const h = S.habits.find(x => x.id === id); if (h && confirm(`「${h.name}」を消しますか？（もらった経験値はそのまま）`)) { S.habits = S.habits.filter(x => x.id !== id); S.editing = null; } break; }
     case 'tcheck': { const x = S.todos.find(x => x.id === id); if (x) x.done = x.done ? null : t.toISOString(); break; }
     case 'tdel': S.todos = S.todos.filter(x => x.id !== id); break;
@@ -597,7 +719,7 @@ document.addEventListener('click', e => {
   }
   saveTasks(); render();
   const after = Calc.garden(S, Calc.ymd(t));
-  if (after.xp > before.xp) pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : `+${after.xp - before.xp} XP`);
+  if (after.xp > before.xp) pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : `+${after.xp - before.xp} XP`, '#face2');
 });
 document.addEventListener('submit', e => {
   const f = e.target; e.preventDefault();
@@ -649,11 +771,13 @@ setInterval(() => {
   const t = now();
   document.querySelectorAll('[data-until]').forEach(el => { el.textContent = mmss(el.dataset.until - t); });
   const ph = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings).phase;
-  if (ph !== lastPhase && S.tab === 'wake') render();
+  if (ph !== lastPhase && (S.tab === 'wake' || WIDE.matches) && !(document.activeElement && document.activeElement.matches('input, textarea'))) render();
 }, 1000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && !(document.activeElement && document.activeElement.matches('input'))) render(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) Sync.soon(100); if (!document.hidden && !(document.activeElement && document.activeElement.matches('input'))) render(); });
 
 render();
+Sync.soon(100);
+setInterval(() => { if (!document.hidden) Sync.soon(100); }, 60000);
 // 開き直したときも、2回目の待ち時間中なら知らせる準備をする
 (() => { const t = now(), j = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings); if (j.phase === 'wait') armSecond(j.from - t); })();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');

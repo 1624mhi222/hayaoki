@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- 15分ごとに Obsidian のタスクをスプレッドシートに送る。SCRIPT_PATH は入れた場所に置きかえる -->
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.hayaoki.obsidian</string>
+  <key>ProgramArguments</key>
+  <array><string>/usr/bin/python3</string><string>SCRIPT_PATH</string><string>sync</string></array>
+  <key>StartInterval</key><integer>900</integer>
+  <key>RunAtLoad</key><true/>
+  <key>StandardOutPath</key><string>/tmp/hayaoki-obsidian.log</string>
+  <key>StandardErrorPath</key><string>/tmp/hayaoki-obsidian.log</string>
+</dict>
+</plist>
