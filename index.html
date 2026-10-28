@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="早起き">
+<meta name="theme-color" content="#fbf7ef">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>早起き</title>
+<style>
+  :root {
+    --bg: #fbf7ef; --card: #ffffff; --ink: #1f1f1d; --quiet: #6b6a66; --line: #ebe5d8; --chip: #f1ece2;
+    --accent: #e08a00; --accent-soft: #fff0d4; --good: #2f8f5e; --good-soft: #dff2e7;
+    --warn: #c26a12; --warn-soft: #fbeedd; --bad: #b3261e; --bad-soft: #f9e2df;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171614; --card: #23211e; --ink: #f0efeb; --quiet: #a3a19b; --line: #36332e; --chip: #2e2b27;
+      --accent: #f5a524; --accent-soft: #3b2c12; --good: #6cc196; --good-soft: #1f3529;
+      --warn: #f0a24f; --warn-soft: #3a2a17; --bad: #f2867d; --bad-soft: #3d201d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 16px 48px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .label { font-size: 13px; color: var(--quiet); }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  /* キャラクター */
+  .pet { display: flex; gap: 14px; align-items: center; }
+  .pet .face { font-size: 64px; line-height: 1; width: 84px; height: 84px; display: grid; place-items: center;
+    background: var(--accent-soft); border-radius: 24px; flex: none; }
+  .pet .face.hop { animation: hop .7s cubic-bezier(.3,1.6,.5,1) 2; }
+  @keyframes hop { 40% { transform: translateY(-14px) rotate(-6deg); } }
+  .pet .info { flex: 1; min-width: 0; }
+  .pet .name { font-weight: 700; font-size: 17px; }
+  .bar { height: 8px; background: var(--chip); border-radius: 99px; overflow: hidden; margin: 6px 0 4px; }
+  .bar > div { height: 100%; background: var(--accent); border-radius: 99px; transition: width .6s; }
+  .stats { display: flex; gap: 8px; margin-top: 12px; }
+  .stat { flex: 1; background: var(--bg); border-radius: 12px; padding: 8px 10px; }
+  .stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+  /* 今日 */
+  .today .when { font-size: 14px; color: var(--quiet); }
+  .today .msg { font-size: 22px; font-weight: 700; margin: 6px 0 4px; }
+  .today .hint { font-size: 14px; color: var(--quiet); }
+  .big { display: block; width: 100%; border: 0; border-radius: 20px; padding: 26px 12px; margin-top: 14px;
+    font: inherit; font-size: 26px; font-weight: 800; color: #fff; background: var(--accent); box-shadow: 0 6px 0 #b86f00; }
+  .big:active { transform: translateY(4px); box-shadow: 0 2px 0 #b86f00; }
+  .big.second { background: var(--good); box-shadow: 0 6px 0 #1f6a44; }
+  .big.second:active { box-shadow: 0 2px 0 #1f6a44; }
+  .count { font-size: 44px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; margin: 6px 0; }
+  .result { border-radius: 14px; padding: 14px; margin-top: 12px; font-size: 15px; }
+  .result.perfect { background: var(--good-soft); } .result.half, .result.late { background: var(--warn-soft); }
+  .result.miss { background: var(--bad-soft); }
+  .result b { font-size: 18px; }
+  /* きろく */
+  .weeks { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .weeks .wd { text-align: center; font-size: 11px; color: var(--quiet); }
+  .weeks .c { aspect-ratio: 1; border-radius: 8px; display: grid; place-items: center; font-size: 11px; color: var(--quiet); background: none; }
+  .weeks .c.cls { background: var(--chip); }
+  .weeks .c.perfect { background: var(--good); color: #fff; } .weeks .c.half, .weeks .c.late { background: var(--warn); color: #fff; }
+  .weeks .c.miss { background: var(--bad); color: #fff; }
+  .weeks .c.now { outline: 2px solid var(--accent); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--quiet); margin-top: 10px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+  /* 設定 */
+  details summary { cursor: pointer; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center; margin-top: 12px; }
+  input[type=time], input[type=number] { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); width: 100%; }
+  .btn { border: 0; border-radius: 12px; padding: 12px; font: inherit; font-weight: 600; background: var(--chip); color: var(--ink); width: 100%; margin-top: 10px; }
+  .btn.main { background: var(--accent); color: #fff; }
+  .note { font-size: 13px; color: var(--quiet); margin: 8px 0 0; }
+  .linkbtn { border: 0; background: none; color: var(--bad); font: inherit; font-size: 13px; padding: 0; margin-top: 12px; }
+  .pop { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); font-size: 30px; font-weight: 800; color: var(--accent);
+    pointer-events: none; animation: pop 1.6s ease-out forwards; text-shadow: 0 2px 0 var(--card); }
+  @keyframes pop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.6); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -140%) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .pet .face.hop, .pop { animation: none; } }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// ---- 計算(画面と切り離した純粋な関数) ----
+const MIN = 60000;
+const WIN = 20;   // 2回目のチェックインを押せる長さ(分)
+const XP = { perfect: 30, half: 10, late: 8, late1: 3, miss: 0 };
+const RESULT = {
+  perfect: '大成功！ 起きて、二度寝もしなかった',
+  half: '起きたけど、2回目を押せなかった（二度寝かも）',
+  late: '目標には遅れたけど、授業には間に合った',
+  late1: '目標に遅れて、2回目も押せなかった',
+  miss: '授業の時間までに起きられなかった',
+};
+// レベルごとの姿。lv はその姿になるレベル
+const STAGES = [
+  { lv: 1, face: '🥚', name: 'たまご' }, { lv: 2, face: '🐣', name: 'われかけのたまご' }, { lv: 3, face: '🐥', name: 'ひよこ' },
+  { lv: 5, face: '🐤', name: '元気なひよこ' }, { lv: 7, face: '🐦', name: '小鳥' }, { lv: 10, face: '🕊️', name: 'はと' },
+  { lv: 14, face: '🦜', name: 'オウム' }, { lv: 19, face: '🦅', name: 'わし' }, { lv: 25, face: '🦚', name: 'くじゃく' }, { lv: 32, face: '🐉', name: 'ドラゴン' },
+];
+const WD = ['日', '月', '火', '水', '木', '金', '土'];
+const Calc = {
+  pad: n => String(n).padStart(2, '0'),
+  ymd(d) { return d.getFullYear() + '-' + this.pad(d.getMonth() + 1) + '-' + this.pad(d.getDate()); },
+  hm(d) { return this.pad(d.getHours()) + ':' + this.pad(d.getMinutes()); },
+  parse(ymd) { const [y, m, d] = ymd.split('-').map(Number); return new Date(y, m - 1, d); },
+  addDays(ymd, k) { const d = this.parse(ymd); d.setDate(d.getDate() + k); return this.ymd(d); },
+  // その日の授業・目標起床・チェックインを押せるようになる時刻。授業がない日は null
+  plan(ymd, s) {
+    const t = s.classes[this.parse(ymd).getDay()];
+    if (!t) return null;
+    const [h, m] = t.split(':').map(Number);
+    const cls = this.parse(ymd); cls.setHours(h, m, 0, 0);
+    const target = new Date(cls - s.lead * MIN);
+    return { cls, target, open: new Date(target - 90 * MIN) };
+  },
+  // 今どの段階か(phase)と、決まっていれば結果(result)
+  judge(p, rec, now, s) {
+    if (!p) return { phase: 'off' };
+    rec = rec || {};
+    const c1 = rec.c1 ? new Date(rec.c1) : null, c2 = rec.c2 ? new Date(rec.c2) : null;
+    if (!c1) {
+      if (now < p.open) return { phase: 'early' };
+      if (now < p.cls) return { phase: 'wake', late: now > p.target };
+      return { phase: 'done', result: 'miss' };
+    }
+    const ontime = c1 <= p.target;
+    const from = new Date(+c1 + s.gap * MIN), until = new Date(+from + WIN * MIN);
+    if (c2) return { phase: 'done', result: ontime ? 'perfect' : 'late', c1, c2 };
+    if (now < from) return { phase: 'wait', from, c1 };
+    if (now < until) return { phase: 'second', until, c1 };
+    return { phase: 'done', result: ontime ? 'half' : 'late1', c1 };
+  },
+  // 使い始めた日から今日までを順に見て、経験値と連続記録を数える
+  // 大成功で連続+1、寝坊で半分(0には戻さない)、それ以外はそのまま
+  stats(log, s, now) {
+    const today = this.ymd(now);
+    let xp = 0, streak = 0, best = 0, perfect = 0, days = 0;
+    for (let d = s.start; d <= today; d = this.addDays(d, 1)) {
+      const j = this.judge(this.plan(d, s), log[d], now, s);
+      if (!j.result) continue;
+      days++; xp += XP[j.result];
+      if (j.result === 'perfect') { streak++; perfect++; }
+      else if (j.result === 'miss') streak = Math.floor(streak / 2);
+      best = Math.max(best, streak);
+    }
+    return { xp, streak, best, perfect, days, ...this.level(xp) };
+  },
+  // レベル1→2は40、そこから1レベルごとに必要な経験値が20ずつ増える
+  level(xp) {
+    let lv = 1, need = 40, rest = xp;
+    while (rest >= need) { rest -= need; lv++; need += 20; }
+    const stage = STAGES.filter(x => x.lv <= lv).pop();
+    const next = STAGES.find(x => x.lv > lv);
+    return { lv, into: rest, need, stage, next };
+  },
+  // カレンダー用(.ics)。授業の曜日ごとに、目標起床の時刻と2回目の時刻に通知が鳴る予定を毎週くり返す
+  ics(s, now) {
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//hayaoki//JA', 'CALSCALE:GREGORIAN'];
+    const stamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+    for (let k = 0; k < 7; k++) {
+      const d = this.addDays(this.ymd(now), k), p = this.plan(d, s);
+      if (!p) continue;
+      const t = p.target, f = x => this.ymd(x).replace(/-/g, '') + 'T' + this.hm(x).replace(':', '') + '00';
+      const by = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][t.getDay()];
+      lines.push('BEGIN:VEVENT', 'UID:hayaoki-' + by + '@1624mhi222.github.io', 'DTSTAMP:' + stamp,
+        'DTSTART:' + f(t), 'DTEND:' + f(new Date(+t + (s.gap + 5) * MIN)), 'RRULE:FREQ=WEEKLY;BYDAY=' + by,
+        'SUMMARY:☀️ 早起きアプリで「起きた！」を押す',
+        'DESCRIPTION:授業 ' + this.hm(p.cls) + '。' + s.gap + '分後に「まだ起きてる！」も押す',
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:起きた！を押す', 'TRIGGER:PT0M', 'END:VALARM',
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:まだ起きてる？2回目を押す', 'TRIGGER:PT' + s.gap + 'M', 'END:VALARM',
+        'END:VEVENT');
+    }
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  },
+};
+
+// ---- 保存 ----
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+// テスト用: ?now=2026-11-02T06:50 で時計をずらす(そこから普通に進む)
+const shift = (q => q ? new Date(q) - Date.now() : 0)(new URLSearchParams(location.search).get('now'));
+const now = () => new Date(Date.now() + shift);
+
+const S = {
+  settings: store.get('ha-settings', null) || { classes: { 1: '08:00', 3: '08:00', 5: '10:00' }, lead: 60, gap: 15, start: Calc.ymd(now()) },
+  log: store.get('ha-log', {}),
+};
+const saveSettings = () => store.set('ha-settings', S.settings);
+const saveLog = () => store.set('ha-log', S.log);
+saveSettings();
+
+// ---- 画面 ----
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const mmss = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return Calc.pad(Math.floor(t / 60)) + ':' + Calc.pad(t % 60); };
+
+function petCard(st) {
+  const pct = Math.round(st.into / st.need * 100);
+  return `<section class="card"><div class="pet">
+    <div class="face" id="face">${st.stage.face}</div>
+    <div class="info"><div class="name">${st.stage.name} <span class="label">Lv.${st.lv}</span></div>
+      <div class="bar"><div style="width:${pct}%"></div></div>
+      <div class="label">次のレベルまで ${st.need - st.into} XP${st.next ? ` ・ Lv.${st.next.lv}で${st.next.face}に進化` : ''}</div></div></div>
+    <div class="stats">
+      <div class="stat"><span class="label">🔥 連続成功</span><b>${st.streak}</b></div>
+      <div class="stat"><span class="label">最高記録</span><b>${st.best}</b></div>
+      <div class="stat"><span class="label">大成功</span><b>${st.perfect}<span class="label">/${st.days}回</span></b></div>
+    </div></section>`;
+}
+
+function todayCard(t) {
+  const d = Calc.ymd(t), p = Calc.plan(d, S.settings), j = Calc.judge(p, S.log[d], t, S.settings);
+  let head = `<div class="when">${t.getMonth() + 1}月${t.getDate()}日(${WD[t.getDay()]})`;
+  if (p) head += ` ・ 授業 ${Calc.hm(p.cls)} ・ 目標起床 <b>${Calc.hm(p.target)}</b>`;
+  head += '</div>';
+  let body = '';
+  if (j.phase === 'off') {
+    const nx = nextClass(d);
+    body = `<div class="msg">今日は授業なし 🌙</div><div class="hint">${nx ? `次は ${nx}。前の日は早めに寝よう` : '設定で授業の時間を入れてね'}</div>`;
+  } else if (j.phase === 'early') {
+    body = `<div class="msg">まだ早いよ</div><div class="hint">${Calc.hm(p.open)} から押せるようになります</div>`;
+  } else if (j.phase === 'wake') {
+    body = `<div class="msg">${j.late ? '目標を過ぎてる！急いで' : 'おはよう！'}</div>
+      <div class="hint">${j.late ? `授業 ${Calc.hm(p.cls)} までに押せば少しだけ経験値` : `${Calc.hm(p.target)} までに押すと大成功のチャンス`}</div>
+      <button class="big" data-act="c1">☀️ 起きた！</button>`;
+  } else if (j.phase === 'wait') {
+    body = `<div class="msg">二度寝チェックまで</div><div class="count" data-until="${+j.from}">${mmss(j.from - t)}</div>
+      <div class="hint">布団から出て、顔を洗ったり着替えたりしておこう。${Calc.hm(j.from)} から ${WIN}分のあいだに「まだ起きてる！」を押してね。<br>スマホのタイマーを${S.settings.gap}分にしておくと確実です。</div>`;
+  } else if (j.phase === 'second') {
+    body = `<div class="msg">まだ起きてる？</div><div class="hint">あと <b data-until="${+j.until}">${mmss(j.until - t)}</b> 以内に押してね</div>
+      <button class="big second" data-act="c2">💪 まだ起きてる！</button>`;
+  } else {
+    const r = j.result;
+    const times = [j.c1 && `起きた ${Calc.hm(j.c1)}`, j.c2 && `2回目 ${Calc.hm(j.c2)}`].filter(Boolean).join(' ・ ');
+    body = `<div class="result ${r === 'late1' ? 'late' : r}"><b>${r === 'perfect' ? '🎉 ' : ''}${RESULT[r]}</b><br>
+      +${XP[r]} XP${times ? ' ・ ' + times : ''}${r === 'miss' ? '<br>連続記録は半分になったけど、0じゃないよ。次の授業の日にとりかえそう' : ''}</div>`;
+  }
+  return `<section class="card today">${head}${body}</section>`;
+}
+
+function nextClass(d) {
+  for (let k = 1; k <= 7; k++) {
+    const x = Calc.addDays(d, k), p = Calc.plan(x, S.settings);
+    if (p) return `${WD[p.cls.getDay()]}曜 ${Calc.hm(p.cls)}の授業（${Calc.hm(p.target)}起床）`;
+  }
+  return null;
+}
+
+// 直近5週間。月曜はじまり
+function weeksCard(t) {
+  const today = Calc.ymd(t);
+  const back = (t.getDay() + 6) % 7;
+  const first = Calc.addDays(today, -back - 28);
+  let cells = ['月', '火', '水', '木', '金', '土', '日'].map(w => `<div class="wd">${w}</div>`).join('');
+  for (let k = 0; k < 35; k++) {
+    const d = Calc.addDays(first, k), p = Calc.plan(d, S.settings);
+    let cls = 'c';
+    if (p && d >= S.settings.start && d <= today) {
+      const j = Calc.judge(p, S.log[d], t, S.settings);
+      cls += ' cls' + (j.result ? ' ' + (j.result === 'late1' ? 'late' : j.result) : '');
+    } else if (p && d > today) cls += ' cls';
+    if (d === today) cls += ' now';
+    cells += `<div class="${cls}">${Number(d.slice(8))}</div>`;
+  }
+  return `<section class="card"><h2>きろく</h2><div class="weeks">${cells}</div>
+    <div class="legend"><span><i style="background:var(--good)"></i>大成功</span><span><i style="background:var(--warn)"></i>半分・遅れ</span>
+    <span><i style="background:var(--bad)"></i>寝坊</span><span><i style="background:var(--chip)"></i>授業の日</span></div></section>`;
+}
+
+function settingsCard() {
+  const s = S.settings;
+  const rows = [1, 2, 3, 4, 5, 6, 0].map(w => `<label>${WD[w]}曜</label><input type="time" data-wd="${w}" value="${s.classes[w] || ''}">`).join('');
+  return `<section class="card"><details><summary>設定</summary>
+    <p class="note">授業がある曜日に、始まる時間を入れてください。空欄の日は授業なしです。</p>
+    <div class="grid">${rows}
+      <label>授業の何分前に起きる</label><input type="number" min="10" max="240" step="5" data-k="lead" value="${s.lead}">
+      <label>2回目までの分数</label><input type="number" min="5" max="60" step="1" data-k="gap" value="${s.gap}">
+    </div>
+    <button class="btn main" data-act="ics">📅 カレンダーに通知を入れる</button>
+    <p class="note">授業の曜日の起床時間と${s.gap}分後に通知が出る予定を、毎週くり返しで追加します。アプリを閉じていても知らせてくれます。時間を変えたら、前の予定を消してから入れ直してください。</p>
+    <button class="btn" data-act="notify">🔔 アプリを開いているときの通知を許可</button>
+    <button class="linkbtn" data-act="reset">きろくを全部消す</button>
+  </details></section>`;
+}
+
+let lastPhase = null;
+function render() {
+  const t = now();
+  const open = $('details') && $('details').open;
+  const st = Calc.stats(S.log, S.settings, t);
+  $('#app').innerHTML = petCard(st) + todayCard(t) + weeksCard(t) + settingsCard();
+  if (open) $('details').open = true;
+  lastPhase = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings).phase;
+}
+
+function pop(text) {
+  const el = document.createElement('div'); el.className = 'pop'; el.textContent = text;
+  document.body.appendChild(el); setTimeout(() => el.remove(), 1700);
+  const f = $('#face'); if (f) { f.classList.remove('hop'); void f.offsetWidth; f.classList.add('hop'); }
+}
+
+// 開いたままにしているとき、2回目の時間になったら音と通知で知らせる
+let alarm = null;
+function armSecond(ms) {
+  clearTimeout(alarm);
+  alarm = setTimeout(() => {
+    try { if (Notification.permission === 'granted') new Notification('まだ起きてる？', { body: '「まだ起きてる！」を押してね', icon: 'icon-192.png' }); } catch (e) {}
+    try { navigator.vibrate && navigator.vibrate([300, 150, 300]); } catch (e) {}
+    beep();
+    render();
+  }, ms);
+}
+let ctx = null;
+function beep() {
+  try {
+    ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+    [0, .35, .7].forEach(at => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = 880; g.gain.setValueAtTime(.2, ctx.currentTime + at); g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + at + .3);
+      o.connect(g).connect(ctx.destination); o.start(ctx.currentTime + at); o.stop(ctx.currentTime + at + .3);
+    });
+  } catch (e) {}
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const t = now(), d = Calc.ymd(t), act = b.dataset.act;
+  if (act === 'c1' || act === 'c2') {
+    const before = Calc.stats(S.log, S.settings, t);
+    S.log[d] = Object.assign({}, S.log[d], { [act]: t.toISOString() });
+    saveLog();
+    if (act === 'c1') {
+      try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); ctx.resume(); } catch (e) {}   // 押したときに音を使えるようにしておく
+      armSecond(S.settings.gap * MIN);
+    }
+    render();
+    const after = Calc.stats(S.log, S.settings, t);
+    if (act === 'c2') pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : `+${after.xp - before.xp} XP`);
+    else pop('おはよう！');
+  } else if (act === 'ics') {
+    const blob = new Blob([Calc.ics(S.settings, t)], { type: 'text/calendar' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hayaoki.ics'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } else if (act === 'notify') {
+    try { Notification.requestPermission().then(p => alert(p === 'granted' ? '許可しました' : '許可されませんでした')); }
+    catch (err) { alert('この端末では通知を使えません'); }
+  } else if (act === 'reset') {
+    if (confirm('きろくと経験値を全部消します。よいですか？')) { S.log = {}; S.settings.start = d; saveLog(); saveSettings(); render(); }
+  }
+});
+
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.wd) { if (el.value) S.settings.classes[el.dataset.wd] = el.value; else delete S.settings.classes[el.dataset.wd]; }
+  else if (el.dataset.k) { const v = Number(el.value); if (v > 0) S.settings[el.dataset.k] = v; }
+  else return;
+  saveSettings(); render();
+});
+
+// カウントダウンは毎秒書きかえ、段階が変わったら画面ごと描き直す
+setInterval(() => {
+  const t = now();
+  document.querySelectorAll('[data-until]').forEach(el => { el.textContent = mmss(el.dataset.until - t); });
+  const ph = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings).phase;
+  if (ph !== lastPhase) render();
+}, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+
+render();
+// 開き直したときも、2回目の待ち時間中なら知らせる準備をする
+(() => { const t = now(), j = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings); if (j.phase === 'wait') armSecond(j.from - t); })();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
