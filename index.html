@@ -104,6 +104,7 @@
   .due.today { background: var(--warn-soft); color: var(--warn); } .due.over { background: var(--bad-soft); color: var(--bad); }
   .add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
   .add input[type=text] { flex: 1 1 160px; min-width: 0; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); }
+  .add textarea { flex: 1 1 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); resize: vertical; }
   .add input[type=date] { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); }
   .add .btn { width: auto; margin: 0; padding: 10px 16px; }
   .days { display: flex; gap: 4px; width: 100%; }
@@ -281,7 +282,7 @@ const S = {
   habits: store.get('ha-habits', []),     // { id, name, days: [曜日の数字] }
   hlog: store.get('ha-hlog', {}),         // { 'YYYY-MM-DD': [日課のid] }
   todos: store.get('ha-todos', []),       // { id, text, due, done }
-  edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false,
+  edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false, bulk: false,
 };
 const saveTasks = () => { store.set('ha-habits', S.habits); store.set('ha-hlog', S.hlog); store.set('ha-todos', S.todos); };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -446,8 +447,11 @@ function todosCard(t) {
     <div class="what">${esc(x.text)}${x.done ? '' : dueTag(x)}</div>
     <button class="del" data-t="tdel" data-id="${x.id}" aria-label="消す">✕</button></div>`;
   return `<section class="card"><h2>TODO</h2>${open.map(row).join('') || '<div class="empty">やることはぜんぶ終わり 🎉</div>'}
-    <form class="add" data-form="todo"><input type="text" name="text" placeholder="やること" maxlength="80" autocomplete="off">
+    <form class="add" data-form="todo">${S.bulk
+      ? `<textarea name="text" rows="6" placeholder="1行に1つずつ。メモアプリやObsidianからそのまま貼りつけてOK"></textarea>`
+      : `<input type="text" name="text" placeholder="やること" maxlength="80" autocomplete="off">`}
       <input type="date" name="due" aria-label="期限"><button class="btn main">追加</button></form>
+    <button class="linkbtn" style="color:var(--accent)" data-t="bulk">${S.bulk ? '1つずつ追加にもどす' : '📋 まとめて追加'}</button><br>
     ${done.length ? `<button class="linkbtn" style="color:var(--quiet)" data-t="showdone">${S.showDone ? '完了したものを隠す' : `完了したもの（${done.length}）`}</button>${S.showDone ? done.slice(0, 30).map(row).join('') : ''}` : ''}
   </section>`;
 }
@@ -462,7 +466,7 @@ function render() {
   const open = $('details') && $('details').open;
   if (S.tab === 'tasks') {
     // 曜日をえらんだりチェックしたりしても、書きかけの入力は消さない
-    const keep = [...document.querySelectorAll('form[data-form] input')].map(i => [i.form.dataset.form, i.name, i.value]);
+    const keep = [...document.querySelectorAll('form[data-form] input, form[data-form] textarea')].map(i => [i.form.dataset.form, i.name, i.value]);
     const focused = document.activeElement && document.activeElement.form && document.activeElement.name ? [document.activeElement.form.dataset.form, document.activeElement.name] : null;
     $('#app').innerHTML = gardenCard(Calc.garden(S, Calc.ymd(t)), t) + habitsCard(t) + todosCard(t) + tabsBar();
     keep.forEach(([f, n, v]) => { const i = $(`[data-form=${f}] [name=${n}]`); if (i) i.value = v; });
@@ -547,6 +551,7 @@ document.addEventListener('click', e => {
     case 'tab': S.tab = b.dataset.v; store.set('ha-tab', S.tab); window.scrollTo(0, 0); break;
     case 'edit': S.edit = !S.edit; break;
     case 'showdone': S.showDone = !S.showDone; break;
+    case 'bulk': S.bulk = !S.bulk; break;
     case 'day': { const v = Number(b.dataset.d); S.newDays = S.newDays.includes(v) ? S.newDays.filter(x => x !== v) : [...S.newDays, v]; break; }
     case 'hcheck': { const l = S.hlog[d] || []; S.hlog[d] = l.includes(id) ? l.filter(x => x !== id) : [...l, id]; if (!S.hlog[d].length) delete S.hlog[d]; break; }
     case 'hdel': { const h = S.habits.find(x => x.id === id); if (h && confirm(`「${h.name}」を消しますか？（もらった経験値はそのまま）`)) S.habits = S.habits.filter(x => x.id !== id); break; }
@@ -565,11 +570,17 @@ document.addEventListener('submit', e => {
     if (!S.newDays.length) { alert('やる曜日を1つ以上えらんでね'); return; }
     S.habits.push({ id: uid(), name, days: [...S.newDays].sort(), since: Calc.ymd(now()) }); S.newDays = [0, 1, 2, 3, 4, 5, 6];
   } else if (f.dataset.form === 'todo') {
-    const text = f.elements['text'].value.trim(); if (!text) return;
-    S.todos.push({ id: uid(), text, due: f.elements['due'].value || '', done: null });
+    // まとめて追加: 1行1件。「・」「-」「- [ ]」などの頭の記号は取る。チェック済み「- [x]」は飛ばす
+    const lines = f.elements['text'].value.split(/\r?\n/)
+      .filter(l => !/^\s*[-*+]\s*\[[xX]\]/.test(l))
+      .map(l => l.replace(/^\s*(?:[-*+・•]|\d+[.)])?\s*(?:\[ \]\s*)?/, '').trim()).filter(Boolean);
+    if (!lines.length) return;
+    const due = f.elements['due'].value || '';
+    lines.forEach(text => S.todos.push({ id: uid(), text: text.slice(0, 80), due, done: null }));
+    if (lines.length > 1) S.bulk = false;
   } else return;
   f.reset(); saveTasks(); render();
-  const inp = $(`[data-form=${f.dataset.form}] input[type=text]`); if (inp) inp.focus();
+  const inp = $(`[data-form=${f.dataset.form}] [name=text], [data-form=${f.dataset.form}] [name=name]`); if (inp) inp.focus();
 });
 
 // カウントダウンは毎秒書きかえ、段階が変わったら画面ごと描き直す
