@@ -81,6 +81,37 @@
   @keyframes pop { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.6); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
     100% { opacity: 0; transform: translate(-50%, -140%) scale(1); } }
   @media (prefers-reduced-motion: reduce) { .pet .face.hop, .pop { animation: none; } }
+  /* タブ */
+  main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px; z-index: 5;
+    padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--line); }
+  .tabs button { flex: 1; max-width: 244px; border: 0; border-radius: 12px; padding: 10px; font: inherit; font-weight: 600; background: none; color: var(--quiet); }
+  .tabs button.on { background: var(--accent-soft); color: var(--ink); }
+  .pet .face.plant { background: var(--good-soft); }
+  .bar.green > div { background: var(--good); }
+  /* 日課・TODO */
+  .item { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+  .item:first-of-type { border-top: 0; }
+  .item .what { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .item .what small { display: block; color: var(--quiet); font-size: 12px; }
+  .item.off { opacity: .5; }
+  .item.donef .what { text-decoration: line-through; color: var(--quiet); }
+  .tick { flex: none; width: 34px; height: 34px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); font-size: 18px; color: #fff; display: grid; place-items: center; }
+  .tick.on { background: var(--good); border-color: var(--good); }
+  .del { flex: none; border: 0; background: none; color: var(--quiet); font-size: 18px; width: 32px; height: 32px; }
+  .fire { font-size: 12px; color: var(--accent); font-weight: 700; white-space: nowrap; }
+  .due { font-size: 12px; border-radius: 6px; padding: 1px 6px; background: var(--chip); color: var(--quiet); margin-left: 4px; }
+  .due.today { background: var(--warn-soft); color: var(--warn); } .due.over { background: var(--bad-soft); color: var(--bad); }
+  .add { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .add input[type=text] { flex: 1 1 160px; min-width: 0; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); }
+  .add input[type=date] { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); }
+  .add .btn { width: auto; margin: 0; padding: 10px 16px; }
+  .days { display: flex; gap: 4px; width: 100%; }
+  .days button { flex: 1; border: 1px solid transparent; background: var(--chip); color: var(--ink); border-radius: 999px; padding: 6px 0; font: inherit; font-size: 13px; }
+  .days button.on { background: var(--good-soft); border-color: var(--good); font-weight: 600; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; }
+  .head .linkbtn { color: var(--accent); margin: 0; }
+  .empty { color: var(--quiet); font-size: 14px; padding: 6px 0; }
 </style>
 </head>
 <body>
@@ -100,6 +131,11 @@ const STAGES = [
   { lv: 1, face: '🥚', name: 'たまご' }, { lv: 2, face: '🐣', name: 'われかけのたまご' }, { lv: 3, face: '🐥', name: 'ひよこ' },
   { lv: 5, face: '🐤', name: '元気なひよこ' }, { lv: 7, face: '🐦', name: '小鳥' }, { lv: 10, face: '🕊️', name: 'はと' },
   { lv: 14, face: '🦜', name: 'オウム' }, { lv: 19, face: '🦅', name: 'わし' }, { lv: 25, face: '🦚', name: 'くじゃく' }, { lv: 32, face: '🐉', name: 'ドラゴン' },
+];
+const PLANTS = [
+  { lv: 1, face: '🫘', name: 'たね' }, { lv: 2, face: '🌱', name: 'め' }, { lv: 3, face: '🌿', name: 'わかば' },
+  { lv: 5, face: '🪴', name: 'はちうえ' }, { lv: 7, face: '🌷', name: 'つぼみ' }, { lv: 10, face: '🌻', name: 'ひまわり' },
+  { lv: 14, face: '🌳', name: '木' }, { lv: 19, face: '🌸', name: 'さくらの木' }, { lv: 25, face: '🍎', name: 'りんごの木' },
 ];
 const WD = ['日', '月', '火', '水', '木', '金', '土'];
 const Calc = {
@@ -158,12 +194,30 @@ const Calc = {
     return { xp, streak, best, perfect, days, ...this.level(xp) };
   },
   // レベル1→2は40、そこから1レベルごとに必要な経験値が20ずつ増える
-  level(xp) {
+  level(xp, stages = STAGES) {
     let lv = 1, need = 40, rest = xp;
     while (rest >= need) { rest -= need; lv++; need += 20; }
-    const stage = STAGES.filter(x => x.lv <= lv).pop();
-    const next = STAGES.find(x => x.lv > lv);
+    const stage = stages.filter(x => x.lv <= lv).pop();
+    const next = stages.find(x => x.lv > lv);
     return { lv, into: rest, need, stage, next };
+  },
+  // 日課とTODOで育てる植物。ひよことは別の経験値。日課1回+5、TODO1つ+8
+  garden(hlog, todos) {
+    const checks = Object.values(hlog).reduce((a, l) => a + l.length, 0);
+    const done = todos.filter(x => x.done).length;
+    const xp = checks * 5 + done * 8;
+    const L = this.level(xp, PLANTS);
+    return { xp, ...L };
+  },
+  // その日課が何回続けてできているか。今日まだなら昨日までを数える
+  habitStreak(h, hlog, today) {
+    let n = 0, d = today;
+    if (!(hlog[d] || []).includes(h.id)) d = this.addDays(d, -1);
+    for (let k = 0; k < 400; k++, d = this.addDays(d, -1)) {
+      if (!h.days.includes(this.parse(d).getDay())) continue;
+      if ((hlog[d] || []).includes(h.id)) n++; else break;
+    }
+    return n;
   },
   // カレンダー用(.ics)。授業の曜日ごとに、目標起床の時刻と2回目の時刻に通知が鳴る予定を毎週くり返す
   ics(s, now) {
@@ -200,7 +254,14 @@ const now = () => new Date(Date.now() + shift);
 const S = {
   settings: store.get('ha-settings', null) || { classes: { 1: '08:00', 3: '08:00', 5: '10:00' }, lead: 60, gap: 15, start: Calc.ymd(now()) },
   log: store.get('ha-log', {}),
+  tab: store.get('ha-tab', 'wake'),
+  habits: store.get('ha-habits', []),     // { id, name, days: [曜日の数字] }
+  hlog: store.get('ha-hlog', {}),         // { 'YYYY-MM-DD': [日課のid] }
+  todos: store.get('ha-todos', []),       // { id, text, due, done }
+  edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false,
 };
+const saveTasks = () => { store.set('ha-habits', S.habits); store.set('ha-hlog', S.hlog); store.set('ha-todos', S.todos); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const saveSettings = () => store.set('ha-settings', S.settings);
 const saveLog = () => store.set('ha-log', S.log);
 saveSettings();
@@ -311,13 +372,78 @@ function settingsCard() {
   </details></section>`;
 }
 
+// ---- TODO・日課 ----
+function gardenCard(g, t) {
+  const today = Calc.ymd(t), wd = t.getDay();
+  const due = S.habits.filter(h => h.days.includes(wd)), did = due.filter(h => (S.hlog[today] || []).includes(h.id));
+  const left = S.todos.filter(x => !x.done).length;
+  return `<section class="card"><div class="pet">
+    <div class="face plant" id="face">${g.stage.face}</div>
+    <div class="info"><div class="name">${g.stage.name} <span class="label">Lv.${g.lv}</span></div>
+      <div class="bar green"><div style="width:${Math.round(g.into / g.need * 100)}%"></div></div>
+      <div class="label">次のレベルまで ${g.need - g.into} XP${g.next ? ` ・ Lv.${g.next.lv}で${g.next.face}に` : ''}</div></div></div>
+    <div class="stats">
+      <div class="stat"><span class="label">今日の日課</span><b>${did.length}<span class="label">/${due.length}</span></b></div>
+      <div class="stat"><span class="label">のこりTODO</span><b>${left}</b></div>
+    </div></section>`;
+}
+function habitsCard(t) {
+  const today = Calc.ymd(t), wd = t.getDay(), done = S.hlog[today] || [];
+  const list = [...S.habits].sort((a, b) => b.days.includes(wd) - a.days.includes(wd));
+  const daysTxt = h => h.days.length === 7 ? '毎日' : [1, 2, 3, 4, 5, 6, 0].filter(d => h.days.includes(d)).map(d => WD[d]).join('・');
+  const rows = list.map(h => {
+    const on = h.days.includes(wd), ok = done.includes(h.id), n = Calc.habitStreak(h, S.hlog, today);
+    return `<div class="item ${on ? '' : 'off'}">
+      ${S.edit ? `<button class="del" data-t="hdel" data-id="${h.id}" aria-label="消す">✕</button>` : `<button class="tick ${ok ? 'on' : ''}" data-t="hcheck" data-id="${h.id}" ${on ? '' : 'disabled'} aria-label="できた">${ok ? '✓' : ''}</button>`}
+      <div class="what">${esc(h.name)}<small>${daysTxt(h)}${on ? '' : ' ・ 今日はお休み'}</small></div>
+      ${n ? `<span class="fire">🔥${n}</span>` : ''}</div>`;
+  }).join('') || '<div class="empty">毎日やりたいことを入れてみよう（例: 薬を飲む、筋トレ、日記）</div>';
+  const chips = [1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" class="${S.newDays.includes(d) ? 'on' : ''}" data-t="day" data-d="${d}">${WD[d]}</button>`).join('');
+  return `<section class="card"><div class="head"><h2>日課</h2><button class="linkbtn" data-t="edit">${S.edit ? '完了' : '編集'}</button></div>${rows}
+    <form class="add" data-form="habit"><input type="text" name="name" placeholder="新しい日課" maxlength="40" autocomplete="off"><button class="btn main">追加</button>
+    <div class="days">${chips}</div></form></section>`;
+}
+function todosCard(t) {
+  const today = Calc.ymd(t);
+  const open = S.todos.filter(x => !x.done).sort((a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0);
+  const done = S.todos.filter(x => x.done).sort((a, b) => a.done < b.done ? 1 : -1);
+  const dueTag = x => {
+    if (!x.due) return '';
+    const cls = x.due < today ? 'over' : x.due === today ? 'today' : '';
+    const txt = x.due === today ? '今日まで' : x.due === Calc.addDays(today, 1) ? '明日まで' : `${Number(x.due.slice(5, 7))}/${Number(x.due.slice(8))}${x.due < today ? ' 過ぎてる' : 'まで'}`;
+    return `<span class="due ${cls}">${txt}</span>`;
+  };
+  const row = x => `<div class="item ${x.done ? 'donef' : ''}">
+    <button class="tick ${x.done ? 'on' : ''}" data-t="tcheck" data-id="${x.id}" aria-label="できた">${x.done ? '✓' : ''}</button>
+    <div class="what">${esc(x.text)}${x.done ? '' : dueTag(x)}</div>
+    <button class="del" data-t="tdel" data-id="${x.id}" aria-label="消す">✕</button></div>`;
+  return `<section class="card"><h2>TODO</h2>${open.map(row).join('') || '<div class="empty">やることはぜんぶ終わり 🎉</div>'}
+    <form class="add" data-form="todo"><input type="text" name="text" placeholder="やること" maxlength="80" autocomplete="off">
+      <input type="date" name="due" aria-label="期限"><button class="btn main">追加</button></form>
+    ${done.length ? `<button class="linkbtn" style="color:var(--quiet)" data-t="showdone">${S.showDone ? '完了したものを隠す' : `完了したもの（${done.length}）`}</button>${S.showDone ? done.slice(0, 30).map(row).join('') : ''}` : ''}
+  </section>`;
+}
+function tabsBar() {
+  return `<nav class="tabs"><button class="${S.tab === 'wake' ? 'on' : ''}" data-t="tab" data-v="wake">🐤 早起き</button>
+    <button class="${S.tab === 'tasks' ? 'on' : ''}" data-t="tab" data-v="tasks">🌱 TODO・日課</button></nav>`;
+}
+
 let lastPhase = null;
 function render() {
   const t = now();
   const open = $('details') && $('details').open;
-  const st = Calc.stats(S.log, S.settings, t);
-  $('#app').innerHTML = petCard(st) + todayCard(t) + weeksCard(t) + settingsCard();
-  if (open) $('details').open = true;
+  if (S.tab === 'tasks') {
+    // 曜日をえらんだりチェックしたりしても、書きかけの入力は消さない
+    const keep = [...document.querySelectorAll('form[data-form] input')].map(i => [i.form.dataset.form, i.name, i.value]);
+    const focused = document.activeElement && document.activeElement.form && document.activeElement.name ? [document.activeElement.form.dataset.form, document.activeElement.name] : null;
+    $('#app').innerHTML = gardenCard(Calc.garden(S.hlog, S.todos), t) + habitsCard(t) + todosCard(t) + tabsBar();
+    keep.forEach(([f, n, v]) => { const i = $(`[data-form=${f}] [name=${n}]`); if (i) i.value = v; });
+    if (focused) { const i = $(`[data-form=${focused[0]}] [name=${focused[1]}]`); if (i) i.focus(); }
+  } else {
+    const st = Calc.stats(S.log, S.settings, t);
+    $('#app').innerHTML = petCard(st) + todayCard(t) + weeksCard(t) + settingsCard() + tabsBar();
+    if (open) $('details').open = true;
+  }
   lastPhase = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings).phase;
 }
 
@@ -385,14 +511,47 @@ document.addEventListener('change', e => {
   saveSettings(); render();
 });
 
+// TODO・日課の操作
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-t]'); if (!b) return;
+  const t = now(), d = Calc.ymd(t), id = b.dataset.id, before = Calc.garden(S.hlog, S.todos);
+  switch (b.dataset.t) {
+    case 'tab': S.tab = b.dataset.v; store.set('ha-tab', S.tab); window.scrollTo(0, 0); break;
+    case 'edit': S.edit = !S.edit; break;
+    case 'showdone': S.showDone = !S.showDone; break;
+    case 'day': { const v = Number(b.dataset.d); S.newDays = S.newDays.includes(v) ? S.newDays.filter(x => x !== v) : [...S.newDays, v]; break; }
+    case 'hcheck': { const l = S.hlog[d] || []; S.hlog[d] = l.includes(id) ? l.filter(x => x !== id) : [...l, id]; if (!S.hlog[d].length) delete S.hlog[d]; break; }
+    case 'hdel': { const h = S.habits.find(x => x.id === id); if (h && confirm(`「${h.name}」を消しますか？（もらった経験値はそのまま）`)) S.habits = S.habits.filter(x => x.id !== id); break; }
+    case 'tcheck': { const x = S.todos.find(x => x.id === id); if (x) x.done = x.done ? null : t.toISOString(); break; }
+    case 'tdel': S.todos = S.todos.filter(x => x.id !== id); break;
+    default: return;
+  }
+  saveTasks(); render();
+  const after = Calc.garden(S.hlog, S.todos);
+  if (after.xp > before.xp) pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : `+${after.xp - before.xp} XP`);
+});
+document.addEventListener('submit', e => {
+  const f = e.target; e.preventDefault();
+  if (f.dataset.form === 'habit') {
+    const name = f.elements['name'].value.trim(); if (!name) return;
+    if (!S.newDays.length) { alert('やる曜日を1つ以上えらんでね'); return; }
+    S.habits.push({ id: uid(), name, days: [...S.newDays].sort() }); S.newDays = [0, 1, 2, 3, 4, 5, 6];
+  } else if (f.dataset.form === 'todo') {
+    const text = f.elements['text'].value.trim(); if (!text) return;
+    S.todos.push({ id: uid(), text, due: f.elements['due'].value || '', done: null });
+  } else return;
+  f.reset(); saveTasks(); render();
+  const inp = $(`[data-form=${f.dataset.form}] input[type=text]`); if (inp) inp.focus();
+});
+
 // カウントダウンは毎秒書きかえ、段階が変わったら画面ごと描き直す
 setInterval(() => {
   const t = now();
   document.querySelectorAll('[data-until]').forEach(el => { el.textContent = mmss(el.dataset.until - t); });
   const ph = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings).phase;
-  if (ph !== lastPhase) render();
+  if (ph !== lastPhase && S.tab === 'wake') render();
 }, 1000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !(document.activeElement && document.activeElement.matches('input'))) render(); });
 
 render();
 // 開き直したときも、2回目の待ち時間中なら知らせる準備をする
