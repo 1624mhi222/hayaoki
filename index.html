@@ -109,6 +109,12 @@
   .add .btn { width: auto; margin: 0; padding: 10px 16px; }
   .days { display: flex; gap: 4px; width: 100%; }
   .days button { flex: 1; border: 1px solid transparent; background: var(--chip); color: var(--ink); border-radius: 999px; padding: 6px 0; font: inherit; font-size: 13px; }
+  .what[data-t=open] { cursor: pointer; }
+  .add.editing { padding: 10px; margin: 6px 0; border-radius: 12px; background: var(--accent-soft); }
+  .add.editing .btn { flex: 1; margin: 0; }
+  .btn.danger { color: var(--bad); }
+  .days.mode { margin-top: 4px; } .days .label { align-self: center; }
+  .days input.every { width: 64px; font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); text-align: center; }
   .days button.on { background: var(--good-soft); border-color: var(--good); font-weight: 600; }
   .head { display: flex; justify-content: space-between; align-items: baseline; }
   .head .linkbtn { color: var(--accent); margin: 0; }
@@ -219,7 +225,7 @@ const Calc = {
     const yday = this.addDays(today, -1);
     st.habits.forEach(h => {
       for (let d = h.since || today; d < today; d = this.addDays(d, 1)) {
-        if (h.days.includes(this.parse(d).getDay()) && !(st.hlog[d] || []).includes(h.id)) { missed++; if (d === yday) missedY++; }
+        if (this.isDue(h, d) && !(st.hlog[d] || []).includes(h.id)) { missed++; if (d === yday) missedY++; }
       }
     });
     st.todos.forEach(x => {
@@ -233,12 +239,19 @@ const Calc = {
     const wilted = missedY > 0 || st.todos.some(x => !x.done && x.due && x.due < today);
     return { xp, penalty, missedY, wilted, ...L };
   },
+  // 日課をやる日か。曜日で決めるもの(days)と、始めた日からN日ごとのもの(every)がある
+  isDue(h, d) {
+    if (h.every) { const k = Math.round((this.parse(d) - this.parse(h.since)) / 864e5); return k >= 0 && k % h.every === 0; }
+    return h.days.includes(this.parse(d).getDay());
+  },
+  nextDue(h, d) { for (let k = 1; k <= 60; k++) { const x = this.addDays(d, k); if (this.isDue(h, x)) return x; } return null; },
   // その日課が何回続けてできているか。今日まだなら昨日までを数える
   habitStreak(h, hlog, today) {
     let n = 0, d = today;
     if (!(hlog[d] || []).includes(h.id)) d = this.addDays(d, -1);
     for (let k = 0; k < 400; k++, d = this.addDays(d, -1)) {
-      if (!h.days.includes(this.parse(d).getDay())) continue;
+      if (!this.isDue(h, d)) continue;
+      if (h.since && d < h.since) break;
       if ((hlog[d] || []).includes(h.id)) n++; else break;
     }
     return n;
@@ -282,7 +295,7 @@ const S = {
   habits: store.get('ha-habits', []),     // { id, name, days: [曜日の数字] }
   hlog: store.get('ha-hlog', {}),         // { 'YYYY-MM-DD': [日課のid] }
   todos: store.get('ha-todos', []),       // { id, text, due, done }
-  edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false, bulk: false,
+  edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false, bulk: false, newEvery: false, editing: null, ed: { every: 0, days: [] },
 };
 const saveTasks = () => { store.set('ha-habits', S.habits); store.set('ha-hlog', S.hlog); store.set('ha-todos', S.todos); };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -401,7 +414,7 @@ function settingsCard() {
 // ---- TODO・日課 ----
 function gardenCard(g, t) {
   const today = Calc.ymd(t), wd = t.getDay();
-  const due = S.habits.filter(h => h.days.includes(wd)), did = due.filter(h => (S.hlog[today] || []).includes(h.id));
+  const due = S.habits.filter(h => Calc.isDue(h, today)), did = due.filter(h => (S.hlog[today] || []).includes(h.id));
   const left = S.todos.filter(x => !x.done).length;
   const overdue = S.todos.filter(x => !x.done && x.due && x.due < today).length;
   return `<section class="card"><div class="pet">
@@ -418,19 +431,32 @@ function gardenCard(g, t) {
 }
 function habitsCard(t) {
   const today = Calc.ymd(t), wd = t.getDay(), done = S.hlog[today] || [];
-  const list = [...S.habits].sort((a, b) => b.days.includes(wd) - a.days.includes(wd));
-  const daysTxt = h => h.days.length === 7 ? '毎日' : [1, 2, 3, 4, 5, 6, 0].filter(d => h.days.includes(d)).map(d => WD[d]).join('・');
+  const list = [...S.habits].sort((a, b) => Calc.isDue(b, today) - Calc.isDue(a, today));
+  const daysTxt = h => h.every ? `${h.every}日に1回` : h.days.length === 7 ? '毎日' : [1, 2, 3, 4, 5, 6, 0].filter(d => h.days.includes(d)).map(d => WD[d]).join('・');
   const rows = list.map(h => {
-    const on = h.days.includes(wd), ok = done.includes(h.id), n = Calc.habitStreak(h, S.hlog, today);
+    if (S.editing === h.id) return habitEditor(h);
+    const on = Calc.isDue(h, today), ok = done.includes(h.id), n = Calc.habitStreak(h, S.hlog, today);
     return `<div class="item ${on ? '' : 'off'}">
-      ${S.edit ? `<button class="del" data-t="hdel" data-id="${h.id}" aria-label="消す">✕</button>` : `<button class="tick ${ok ? 'on' : ''}" data-t="hcheck" data-id="${h.id}" ${on ? '' : 'disabled'} aria-label="できた">${ok ? '✓' : ''}</button>`}
-      <div class="what">${esc(h.name)}<small>${daysTxt(h)}${on ? '' : ' ・ 今日はお休み'}</small></div>
+      <button class="tick ${ok ? 'on' : ''}" data-t="hcheck" data-id="${h.id}" ${on ? '' : 'disabled'} aria-label="できた">${ok ? '✓' : ''}</button>
+      <div class="what" data-t="open" data-id="${h.id}">${esc(h.name)}<small>${daysTxt(h)}${on ? '' : (n => ` ・ 今日はお休み${n ? `（次は${Number(n.slice(5, 7))}/${Number(n.slice(8))}）` : ''}`)(Calc.nextDue(h, today))}</small></div>
       ${n ? `<span class="fire">🔥${n}</span>` : ''}</div>`;
   }).join('') || '<div class="empty">毎日やりたいことを入れてみよう（例: 薬を飲む、筋トレ、日記）</div>';
-  const chips = [1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" class="${S.newDays.includes(d) ? 'on' : ''}" data-t="day" data-d="${d}">${WD[d]}</button>`).join('');
-  return `<section class="card"><div class="head"><h2>日課</h2><button class="linkbtn" data-t="edit">${S.edit ? '完了' : '編集'}</button></div>${rows}
+  return `<section class="card"><div class="head"><h2>日課</h2><span class="label">名前をタップで編集</span></div>${rows}
     <form class="add" data-form="habit"><input type="text" name="name" placeholder="新しい日課" maxlength="40" autocomplete="off"><button class="btn main">追加</button>
-    <div class="days">${chips}</div></form></section>`;
+    ${scheduleInputs(S.newEvery ? 3 : 0, S.newDays, '')}</form></section>`;
+}
+// 曜日のボタン・N日ごとの入力。新しく足すときと編集するときで同じものを使う
+function scheduleInputs(every, days, pre) {
+  const mode = `<div class="days mode"><button type="button" class="${every ? '' : 'on'}" data-t="${pre}mode" data-v="0">曜日で決める</button><button type="button" class="${every ? 'on' : ''}" data-t="${pre}mode" data-v="1">N日に1回</button></div>`;
+  const chips = every
+    ? `<span class="label">${pre ? '始めた日から' : '今日から'}</span><input type="number" name="every" min="2" max="60" value="${every}" class="every"><span class="label">日に1回</span>`
+    : [1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" class="${days.includes(d) ? 'on' : ''}" data-t="${pre}day" data-d="${d}">${WD[d]}</button>`).join('');
+  return `${mode}<div class="days">${chips}</div>`;
+}
+function habitEditor(h) {
+  return `<form class="add editing" data-form="ehabit" data-id="${h.id}"><input type="text" name="name" value="${esc(h.name)}" maxlength="40" autocomplete="off">
+    ${scheduleInputs(S.ed.every, S.ed.days, 'e')}
+    <div class="days"><button class="btn main">保存</button><button type="button" class="btn" data-t="cancel">やめる</button><button type="button" class="btn danger" data-t="hdel" data-id="${h.id}">消す</button></div></form>`;
 }
 function todosCard(t) {
   const today = Calc.ymd(t);
@@ -442,9 +468,11 @@ function todosCard(t) {
     const txt = x.due === today ? '今日まで' : x.due === Calc.addDays(today, 1) ? '明日まで' : `${Number(x.due.slice(5, 7))}/${Number(x.due.slice(8))}${x.due < today ? ' 過ぎてる' : 'まで'}`;
     return `<span class="due ${cls}">${txt}</span>`;
   };
-  const row = x => `<div class="item ${x.done ? 'donef' : ''}">
+  const row = x => S.editing === x.id ? `<form class="add editing" data-form="etodo" data-id="${x.id}">
+      <input type="text" name="text" value="${esc(x.text)}" maxlength="80" autocomplete="off"><input type="date" name="due" value="${x.due || ''}" aria-label="期限">
+      <div class="days"><button class="btn main">保存</button><button type="button" class="btn" data-t="cancel">やめる</button></div></form>` : `<div class="item ${x.done ? 'donef' : ''}">
     <button class="tick ${x.done ? 'on' : ''}" data-t="tcheck" data-id="${x.id}" aria-label="できた">${x.done ? '✓' : ''}</button>
-    <div class="what">${esc(x.text)}${x.done ? '' : dueTag(x)}</div>
+    <div class="what" data-t="open" data-id="${x.id}">${esc(x.text)}${x.done ? '' : dueTag(x)}</div>
     <button class="del" data-t="tdel" data-id="${x.id}" aria-label="消す">✕</button></div>`;
   return `<section class="card"><h2>TODO</h2>${open.map(row).join('') || '<div class="empty">やることはぜんぶ終わり 🎉</div>'}
     <form class="add" data-form="todo">${S.bulk
@@ -549,12 +577,20 @@ document.addEventListener('click', e => {
   const t = now(), d = Calc.ymd(t), id = b.dataset.id, before = Calc.garden(S, Calc.ymd(t));
   switch (b.dataset.t) {
     case 'tab': S.tab = b.dataset.v; store.set('ha-tab', S.tab); window.scrollTo(0, 0); break;
-    case 'edit': S.edit = !S.edit; break;
     case 'showdone': S.showDone = !S.showDone; break;
     case 'bulk': S.bulk = !S.bulk; break;
+    case 'mode': S.newEvery = b.dataset.v === '1'; break;
+    case 'open': {
+      const h = S.habits.find(x => x.id === id);
+      S.editing = id; if (h) S.ed = { every: h.every || 0, days: [...h.days] };
+      break;
+    }
+    case 'cancel': S.editing = null; break;
+    case 'emode': S.ed.every = b.dataset.v === '1' ? (S.ed.every || 3) : 0; if (!S.ed.every && !S.ed.days.length) S.ed.days = [0, 1, 2, 3, 4, 5, 6]; break;
+    case 'eday': { const v = Number(b.dataset.d); S.ed.days = S.ed.days.includes(v) ? S.ed.days.filter(x => x !== v) : [...S.ed.days, v]; break; }
     case 'day': { const v = Number(b.dataset.d); S.newDays = S.newDays.includes(v) ? S.newDays.filter(x => x !== v) : [...S.newDays, v]; break; }
     case 'hcheck': { const l = S.hlog[d] || []; S.hlog[d] = l.includes(id) ? l.filter(x => x !== id) : [...l, id]; if (!S.hlog[d].length) delete S.hlog[d]; break; }
-    case 'hdel': { const h = S.habits.find(x => x.id === id); if (h && confirm(`「${h.name}」を消しますか？（もらった経験値はそのまま）`)) S.habits = S.habits.filter(x => x.id !== id); break; }
+    case 'hdel': { const h = S.habits.find(x => x.id === id); if (h && confirm(`「${h.name}」を消しますか？（もらった経験値はそのまま）`)) { S.habits = S.habits.filter(x => x.id !== id); S.editing = null; } break; }
     case 'tcheck': { const x = S.todos.find(x => x.id === id); if (x) x.done = x.done ? null : t.toISOString(); break; }
     case 'tdel': S.todos = S.todos.filter(x => x.id !== id); break;
     default: return;
@@ -567,8 +603,33 @@ document.addEventListener('submit', e => {
   const f = e.target; e.preventDefault();
   if (f.dataset.form === 'habit') {
     const name = f.elements['name'].value.trim(); if (!name) return;
-    if (!S.newDays.length) { alert('やる曜日を1つ以上えらんでね'); return; }
-    S.habits.push({ id: uid(), name, days: [...S.newDays].sort(), since: Calc.ymd(now()) }); S.newDays = [0, 1, 2, 3, 4, 5, 6];
+    if (S.newEvery) {
+      const every = Math.round(Number(f.elements['every'].value));
+      if (!(every >= 2 && every <= 60)) { alert('2〜60日のあいだで入れてね'); return; }
+      S.habits.push({ id: uid(), name, every, days: [], since: Calc.ymd(now()) });
+    } else {
+      if (!S.newDays.length) { alert('やる曜日を1つ以上えらんでね'); return; }
+      S.habits.push({ id: uid(), name, days: [...S.newDays].sort(), since: Calc.ymd(now()) });
+    }
+    S.newDays = [0, 1, 2, 3, 4, 5, 6]; S.newEvery = false;
+  } else if (f.dataset.form === 'ehabit') {
+    const h = S.habits.find(x => x.id === f.dataset.id); if (!h) return;
+    const name = f.elements['name'].value.trim(); if (!name) return;
+    if (S.ed.every) {
+      const every = Math.round(Number(f.elements['every'].value));
+      if (!(every >= 2 && every <= 60)) { alert('2〜60日のあいだで入れてね'); return; }
+      // N日ごとに変えたときは、今日を始まりにする
+      if (!h.every) h.since = Calc.ymd(now());
+      h.every = every; h.days = [];
+    } else {
+      if (!S.ed.days.length) { alert('やる曜日を1つ以上えらんでね'); return; }
+      delete h.every; h.days = [...S.ed.days].sort();
+    }
+    h.name = name; S.editing = null;
+  } else if (f.dataset.form === 'etodo') {
+    const x = S.todos.find(x => x.id === f.dataset.id); if (!x) return;
+    const text = f.elements['text'].value.trim(); if (!text) return;
+    x.text = text; x.due = f.elements['due'].value || ''; S.editing = null;
   } else if (f.dataset.form === 'todo') {
     // まとめて追加: 1行1件。「・」「-」「- [ ]」などの頭の記号は取る。チェック済み「- [x]」は飛ばす
     const lines = f.elements['text'].value.split(/\r?\n/)
