@@ -93,7 +93,6 @@ const ART = {
   100: 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Shan_hai_jing_Zhuyin.jpg',
   // 山海勉強録から引っ越してきた絵: 清代の彩色画帖『山海經圖』(台湾・国家図書館蔵、パブリックドメイン)
   61: 'art/gouin.webp',
-  92: 'art/tengo.webp',
   101: 'art/shukuyu.webp',
   102: 'art/ko.webp',
   103: 'art/teikou.webp',
