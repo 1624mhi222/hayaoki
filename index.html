@@ -348,7 +348,7 @@
 // ---- 計算(画面と切り離した純粋な関数) ----
 const MIN = 60000;
 const WIN = 20;   // 2回目のチェックインを押せる長さ(分)
-const XP = { perfect: 20, half: 5, over: 0 };
+const XP = { perfect: 20, half: -30, over: -150 };   // 二度寝・寝坊は大きく減る
 const BONUS = 7, BONUS_XP = 30;   // 7日続くごとにボーナス
 const RESULT = {
   perfect: '完全覚醒 ― 二度寝の誘惑を断ち切った',
@@ -398,7 +398,7 @@ const Calc = {
     if (!c1 || c1 >= p.close) {
       if (now < p.open) return { phase: 'early' };
       if (now < p.close) return { phase: 'wake' };
-      return { phase: 'done', result: 'over', xp: 0 };
+      return { phase: 'done', result: 'over', xp: XP.over };
     }
     const from = new Date(+c1 + s.gap * MIN), until = new Date(+from + WIN * MIN);
     if (c2) return { phase: 'done', result: 'perfect', xp: XP.perfect, c1, c2 };
@@ -409,7 +409,7 @@ const Calc = {
   // 使い始めた日から今日までを順に見て、経験値と連続記録を数える
   // 大成功で連続+1(7日ごとにボーナス)、二度寝で連続は0。寝坊したらひよこは死んで、お墓に入り、たまごからやり直し
   // 霊獣は1体。早起き・日課・TODO・勉強の経験値がぜんぶこの1体に入る
-  // 早起き 大成功+20 二度寝+5 寝坊は相棒の★が1つ減って経験値0 / 日課+5 サボり-5 / TODO+8 期限切れ1日-3 / 勉強5分で+1
+  // 早起き 大成功+20 二度寝-30 寝坊-150と相棒の★が1つ減る / 日課+5 サボり-5 / TODO+8 期限切れ1日-3 / 勉強5分で+1
   // 勉強は週の目標に届いたら特別召喚と+30、届かなかったら-40
   stats(log, s, now, x = {}) {
     const today = this.ymd(now);
@@ -457,7 +457,7 @@ const Calc = {
       }
       const j = this.judge(this.plan(d, s), log[d], now, s);
       if (j.result) {
-        days++; xp += j.xp; if (d === today) day.wake = j.xp;
+        days++; xp = Math.max(0, xp + j.xp); if (d === today) day.wake = j.xp;
         if (j.result === 'perfect') {
           streak++; perfect++;
           get(this.summon(seed + '|' + d, events.length ? 0 : 1), 'summon');
@@ -471,7 +471,6 @@ const Calc = {
             own[partner]--;
             if (!own[partner]) { delete own[partner]; partner = [...events].reverse().map(e => e.id).find(id => own[id]) || null; }
           }
-          xp = 0;
         }
       }
       // その日に選んだ相棒・交配をあてはめる
@@ -808,7 +807,7 @@ function petCard(st) {
     <details class="rules"${S.rulesOpen ? ' open' : ''}><summary>育て方</summary>
       <p class="note">早起き・日課・TODO・勉強の経験値は、ぜんぶこの1体に入る。</p>
       <dl>
-        <dt>早起き</dt><dd>完全覚醒 +${XP.perfect}・魔物が1体召喚に応じる ／ 二度寝 +${XP.half}（連続は0に） ／ 寝坊 相棒の★が1つ減り、経験値は0に</dd>
+        <dt>早起き</dt><dd>完全覚醒 +${XP.perfect}・魔物が1体召喚に応じる ／ 二度寝 −${-XP.half}・連続は0に ／ 寝坊 −${-XP.over}・相棒の★が1つ減る</dd>
         <dt>連続</dt><dd>完全覚醒が${BONUS}日続くごとに +${BONUS_XP}・珍しい魔物を特別召喚</dd>
         <dt>日課</dt><dd>できたら +5 ／ サボると −5</dd>
         <dt>TODO</dt><dd>終えたら +8 ／ 期限切れは1日ごとに −3</dd>
@@ -902,8 +901,8 @@ function todayCard(t) {
   } else {
     const r = j.result;
     const times = [j.c1 && `起きた ${Calc.hm(j.c1)}`, j.c2 && `2回目 ${Calc.hm(j.c2)}`].filter(Boolean).join(' ・ ');
-    body = `<div class="result ${r}"><b>${RESULT[r]}</b> <span>+${j.xp} XP</span>${times ? `<div class="label">${times}</div>` : ''}
-      ${r === 'over' ? '<div class="note">寝坊の朝、相棒は★を一つ失い、力も失った。★がなくなった魔物は去っていく</div>' : ''}
+    body = `<div class="result ${r}"><b>${RESULT[r]}</b> <span>${j.xp >= 0 ? '+' : '−'}${Math.abs(j.xp)} XP</span>${times ? `<div class="label">${times}</div>` : ''}
+      ${r === 'over' ? '<div class="note">寝坊の朝、相棒は★を一つ失い、経験値も大きく減った。★がなくなった魔物は去っていく</div>' : ''}
       ${r === 'half' ? '<div class="note">連続記録は0に戻りました</div>' : ''}</div>`;
   }
   return `<section class="card today">${head}${body}</section>`;
