@@ -927,7 +927,6 @@ function settingsCard() {
       <label>合言葉</label><input type="text" id="apikey" value="${esc(Sync.conf ? Sync.conf.key : '')}" autocomplete="off"></div>
     <button class="btn main" data-act="api">${Sync.conf ? 'つなぎ直す' : 'つなぐ'}</button>
     ${Sync.conf ? '<button class="linkbtn" data-act="apioff" style="color:var(--quiet)">連携をやめる（記録はこの端末に残ります）</button>' : ''}
-    <button class="linkbtn" data-act="reset">記録をリセットして明日から始める</button>
   </details></section>`;
 }
 
@@ -1225,13 +1224,6 @@ document.addEventListener('click', e => {
     Sync.status = 'つないでいます…'; render(); Sync.run();
   } else if (act === 'apioff') {
     if (confirm('スプレッドシート連携をやめますか？')) { Sync.conf = null; store.set('ha-api', null); Sync.status = ''; render(); }
-  } else if (act === 'reset') {
-    // タスク・日課・勉強の記録は残し、相棒・図鑑・連続記録・経験値だけを明日から数え直す
-    if (confirm('連続記録・経験値・相棒・図鑑をリセットして、明日から始めます。TODO・日課・勉強の記録は消えません。よいですか？')) {
-      store.set('ha-shown', 0); S.settings.picks = []; S.settings.breeds = []; S.settings.start = Calc.addDays(d, 1); S.settings.seed = uid();
-      if (S.settings.study) { S.settings.study.pets = []; delete S.settings.study.nextEgg; }
-      saveSettings(); render();
-    }
   }
 });
 
