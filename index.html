@@ -22,7 +22,7 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.6 "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
     background: radial-gradient(120% 60% at 50% 0%, #2a1712 0%, #120d0a 45%, #0a0807 100%) fixed, #0a0807; }
   main { max-width: 520px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 16px 48px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; }
@@ -156,13 +156,10 @@
   body.lock { overflow: hidden; }
   .card { border-radius: 3px; background: linear-gradient(180deg, rgba(232,221,195,.045), rgba(0,0,0,0) 40%), var(--card);
     box-shadow: inset 0 0 0 1px rgba(201,162,74,.07), 0 10px 28px rgba(0,0,0,.55); position: relative; }
-  .card::before, .card::after { content: ''; position: absolute; width: 14px; height: 14px; border: 1px solid var(--gold); opacity: .7; pointer-events: none; }
-  .card::before { top: 4px; left: 4px; border-right: 0; border-bottom: 0; }
-  .card::after { bottom: 4px; right: 4px; border-left: 0; border-top: 0; }
-  h2 { font-family: var(--brush); font-weight: 400; font-size: 18px; letter-spacing: .18em; color: var(--gold); }
-  .title { font-family: var(--brush); color: var(--gold); letter-spacing: .3em; font-size: 13px; }
+  h2 { font-family: var(--brush); font-weight: 400; font-size: 18px; letter-spacing: .04em; color: var(--gold); }
+  .title { font-family: var(--brush); color: var(--gold); letter-spacing: .05em; font-size: 13px; }
   .pet { align-items: center; }
-  .pet .name { font-family: var(--brush); font-weight: 400; font-size: 22px; letter-spacing: .06em; line-height: 1.3; }
+  .pet .name { font-family: var(--brush); font-weight: 400; font-size: 22px; line-height: 1.3; }
   .pet .face { font-family: var(--brush); font-size: 30px; border-radius: 50%; color: var(--paper);
     background: radial-gradient(circle at 40% 35%, #3a2a1c, #120d09); box-shadow: 0 0 0 1px var(--gold), 0 0 18px rgba(201,162,74,.25); }
   .pet .face.plant { color: #cfe8d4; background: radial-gradient(circle at 40% 35%, #23402d, #0d1710); box-shadow: 0 0 0 1px var(--good), 0 0 18px rgba(95,158,122,.3); }
@@ -183,7 +180,7 @@
   .big.second { background: linear-gradient(180deg, #2c6b50, #102c20); box-shadow: 0 0 0 1px #7fd1a666, 0 0 30px rgba(95,158,122,.5), 0 5px 0 #071a11; font-size: 28px; }
   .big.second:active { box-shadow: 0 0 0 1px #7fd1a666, 0 1px 0 #071a11; }
   @keyframes breathe { 50% { box-shadow: 0 0 0 1px #f07a5a99, 0 0 46px rgba(255,90,50,.75), 0 5px 0 #3e0c07; } }
-  .today .msg { font-family: var(--brush); font-weight: 400; font-size: 22px; letter-spacing: .1em; }
+  .today .msg { font-family: var(--brush); font-weight: 400; font-size: 22px; }
   .result { border-radius: 2px; border-left: 3px solid var(--quiet); }
   .result.perfect { border-color: var(--good); } .result.half { border-color: var(--warn); } .result.over { border-color: var(--bad); }
   .result b { font-family: var(--brush); font-weight: 400; font-size: 19px; }
@@ -196,7 +193,8 @@
   .tick { border-radius: 2px; border-color: #4a3b29; }
   .tick.on { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(200,57,43,.6); }
   .days button { border-radius: 2px; }
-  .days button.on { background: #3a1611; border-color: var(--accent); }
+  .days button.on { background: #5a2216; border-color: transparent; color: #ffd9b8; }
+  .due { white-space: nowrap; }
   .sugs { border-radius: 2px; background: #20180f; box-shadow: inset 0 0 0 1px #4a3a22; }
   .sugs .item { border-top-color: #3a2e20; }
   .tabs { background: rgba(10,8,7,.94); border-top: 1px solid #4a3a22; backdrop-filter: blur(6px); }
@@ -237,9 +235,9 @@
     box-shadow: 0 0 0 1px var(--gold), 0 0 26px rgba(201,162,74,.35); animation: aura 3s ease-in-out infinite; }
   .art.egg .glyph { color: var(--gold); writing-mode: horizontal-tb; font-size: 40px; }
   .pet .info .bar { margin-top: 8px; }
-  .dexbtn { font-family: var(--brush); font-size: 16px; letter-spacing: .15em; font-weight: 400; color: var(--gold);
+  .dexbtn { font-size: 14px; font-weight: 600; color: var(--gold); padding: 9px;
     background: linear-gradient(90deg, #1d150d, #2a1d11, #1d150d); box-shadow: inset 0 0 0 1px #6b5532; }
-  .dexbtn b { font-family: "Shippori Mincho B1", serif; color: var(--ink); }
+  .dexbtn b { color: var(--ink); }
   /* 図鑑と召喚の幕 */
   .ov { position: fixed; inset: 0; z-index: 20; overflow: auto; padding: max(16px, env(safe-area-inset-top)) 16px 48px;
     background: radial-gradient(120% 70% at 50% 0%, #2a1410, #0a0706 60%) fixed; animation: fade .25s ease-out; }
@@ -649,20 +647,16 @@ const stageOf = lv => STAGES.indexOf(STAGES.filter(x => x.lv <= lv).pop());
 function petCard(st) {
   const m = st.mon, b = m.partner && beast(m.partner, m), k = stageOf(st.lv);
   const pct = Math.round(st.into / st.need * 100), found = Object.keys(m.seen).filter(id => !id.startsWith('h')).length;
-  const graves = st.graves.length ? `<div class="graves"><span class="label">闇に呑まれた朝</span> ${st.graves.slice(-6).reverse().map(g => {
-    const x = g.id && beast(g.id, m);
-    return `<span title="${g.day}">${x ? esc(x.k) : '卵'} Lv.${g.lv} <span class="label">${Number(g.day.slice(5, 7))}/${Number(g.day.slice(8))}</span></span>`; }).join('')}</div>` : '';
   const who = b
-    ? `${artHTML(b, 'st' + k, 'face')}<div class="info"><div class="title">相棒</div><div class="name">${esc(stageName(b, k))}</div>
-      <div class="label">${RARITY[b.r].name} ・ ${b.e}行 ・ ${'★'.repeat(stars(m.own[m.partner] || 1))} ・ Lv.${st.lv}</div>
+    ? `${artHTML(b, 'st' + k, 'face')}<div class="info"><div class="name">${esc(stageName(b, k))}</div>
+      <div class="label">${RARITY[b.r].name} ${'★'.repeat(stars(m.own[m.partner] || 1))} ・ Lv.${st.lv}</div>
       <div class="bar"><div style="width:${pct}%"></div></div>
-      <div class="label">次まで ${st.need - st.into} XP${st.next ? ` ・ Lv.${st.next.lv}で${st.next.name}へ` : ''}</div></div>`
-    : `<div class="art egg" id="face"><span class="glyph">封</span></div><div class="info"><div class="title">封ぜられし卵</div>
-      <div class="name">まだ何も目覚めていない</div><div class="label">初めて完全に目覚めた朝、この卵は孵る</div></div>`;
+      <div class="label">次のLvまで ${st.need - st.into} XP</div></div>`
+    : `<div class="art egg" id="face"><span class="glyph">封</span></div><div class="info"><div class="name">封ぜられし卵</div><div class="label">早起きに大成功した朝に孵る</div></div>`;
   return `<section class="card"><div class="pet">${who}</div>
     <div class="streak ${st.streak ? 'on' : ''}"><div class="flame">焔</div><div><b>${st.streak}</b><span>日連続</span></div>
-      <div class="sub">最高 ${st.best}日 ・ あと${st.toBonus}日で珍獣以上を召喚<br>完全覚醒 ${st.perfect}/${st.days}回</div></div>
-    <button class="btn dexbtn" data-m="dex">図鑑 <b>${found}</b> / ${BEASTS.length}${Object.keys(m.hybrids).length ? ` ・ 異種 ${Object.keys(m.hybrids).length}` : ''}</button>${graves}</section>`;
+      <div class="sub">最高 ${st.best}日<br>あと${st.toBonus}日で特別召喚</div></div>
+    <button class="btn dexbtn" data-m="dex">図鑑 <b>${found}</b> / ${BEASTS.length}</button></section>`;
 }
 
 // 図鑑。まだ会っていない魔物は番号と「？？？」だけ
