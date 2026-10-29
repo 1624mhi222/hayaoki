@@ -137,11 +137,11 @@
   .sugs.shut { padding-bottom: 8px; }
   .sugs .item { border-top-color: rgba(0,0,0,.06); }
   .btn.sm { width: auto; margin: 0; padding: 6px 12px; font-size: 13px; }
-  /* PC: 早起き・日課・TODOを3列に並べ、タブは出さない */
+  /* PC: 早起き・日課・TODO・勉強を4列に並べ、タブは出さない */
   .cols { display: block; }
   @media (min-width: 1000px) {
-    main { max-width: 1320px; padding-bottom: 24px; }
-    .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    main { max-width: 1600px; padding-bottom: 24px; }
+    .cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start; }
     .tabs { display: none; }
   }
   .status { text-align: center; font-size: 12px; color: var(--quiet); margin-top: 8px; }
@@ -198,7 +198,7 @@
   .sugs { border-radius: 2px; background: #20180f; box-shadow: inset 0 0 0 1px #4a3a22; }
   .sugs .item { border-top-color: #3a2e20; }
   .tabs { background: rgba(10,8,7,.94); border-top: 1px solid #4a3a22; backdrop-filter: blur(6px); }
-  .tabs button { border-radius: 2px; }
+  .tabs button { border-radius: 2px; padding: 10px 4px; white-space: nowrap; font-size: 13px; }
   .tabs button b { font-family: var(--brush); font-weight: 400; font-size: 20px; margin-right: 4px; vertical-align: -2px; }
   .tabs button.on { background: #2a120d; color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
   .tabs button.on b { color: #ff7a4a; text-shadow: 0 0 10px #c8392b; }
@@ -291,6 +291,38 @@
   @keyframes ink { from { filter: blur(18px) brightness(.2); transform: scale(.6) rotate(-6deg); opacity: 0; } }
   @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
   @media (prefers-reduced-motion: reduce) { .big, .art.st3::after, .art.egg, .reveal .ring, .reveal * { animation: none !important; } }
+  /* 勉強。霊獣は紫の気 */
+  .bar.violet > div { background: linear-gradient(90deg, #3b2350, #9b5ac8, #e0c3f5); box-shadow: 0 0 10px rgba(155,90,200,.6); }
+  .bar.pace { position: relative; overflow: visible; margin-top: 4px; }
+  .bar.pace i { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--paper); opacity: .7; }
+  .bar.pace.warn > div { background: linear-gradient(90deg, #6b4512, var(--warn)); } .bar.pace.bad > div { background: linear-gradient(90deg, #5a1610, var(--bad)); }
+  .bar.pace.good > div { background: linear-gradient(90deg, #1f4a33, var(--good), #b9e3c6); box-shadow: 0 0 10px rgba(95,158,122,.6); }
+  .pills { margin-top: 4px; }
+  .pill { font-size: 12px; padding: 1px 8px; border: 1px solid #4a3a22; border-radius: 2px; color: var(--quiet); }
+  .pill.good { color: #8fd0aa; border-color: #2f5a42; } .pill.warn { color: var(--warn); border-color: #6b4512; } .pill.bad { color: var(--bad); border-color: #6a2018; }
+  .wk { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; }
+  .wk b { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .grad { margin-top: 10px; padding: 10px; background: #1d1424; box-shadow: inset 0 0 0 1px #5c3a78; border-radius: 2px; }
+  .art.ill img, .art.ill .glyph { filter: grayscale(.7) brightness(.85); }
+  .art.grave { background: radial-gradient(circle at 40% 35%, #3a3630, #12100d); box-shadow: 0 0 0 1px #6b6255; animation: none; }
+  .art.grave .glyph { color: #b9b0a0; }
+  .clock { font-size: 44px; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: .04em; color: var(--quiet); margin: 4px 0; }
+  .clock.on { color: var(--ink); text-shadow: 0 0 16px rgba(155,90,200,.6); }
+  .big.study { background: linear-gradient(180deg, #7b45a3, #2f1745); box-shadow: 0 0 0 1px #c9a0ef66, 0 0 30px rgba(155,90,200,.5), 0 5px 0 #1a0c27; animation: none; }
+  .add select { font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: 2px; background: var(--bg); color: var(--ink); flex: 1 1 120px; min-width: 0; }
+  .add input.hm { width: 64px; flex: none; }
+  .add .label { align-self: center; }
+  .add input[type=file] { flex: 1 1 100%; font-size: 13px; color: var(--quiet); }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; }
+  .chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .subj { display: grid; grid-template-columns: minmax(0, 7em) 1fr auto; gap: 8px; align-items: center; font-size: 14px; padding: 3px 0; }
+  .subj .sb { height: 6px; background: #2a2017; } .subj .sb i { display: block; height: 100%; }
+  .sw { display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle; }
+  .sw button { width: 18px; height: 18px; border-radius: 50%; border: 0; padding: 0; }
+  .sw button.on { box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--ink); }
+  .due.ok { background: var(--good-soft); color: #8fd0aa; }
+  .item > .label { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -373,7 +405,10 @@ const Calc = {
       id = String(id); own[id] = (own[id] || 0) + 1; if (!seen[id]) seen[id] = events.length + 1;
       events.push({ id, kind, n: own[id] }); if (!partner) partner = id;
     };
-    const acts = [...(s.picks || []).map(x => ({ ...x, a0: 'pick' })), ...(s.breeds || []).map(x => ({ ...x, a0: 'breed' }))].sort((a, b) => a.t < b.t ? -1 : 1);
+    // 勉強で神獣まで育てて卒業させた霊獣も、その日に仲間に加わる
+    const grads = ((s.study || {}).pets || []).filter(p => p.end && p.end.k === 'grad')
+      .map(p => ({ t: new Date(p.end.t).toISOString(), id: p.sp, n: p.n || 1, hyb: p.hyb, imp: p.imp, a0: 'grad' }));
+    const acts = [...(s.picks || []).map(x => ({ ...x, a0: 'pick' })), ...(s.breeds || []).map(x => ({ ...x, a0: 'breed' })), ...grads].sort((a, b) => a.t < b.t ? -1 : 1);
     for (let d = s.start; d <= today; d = this.addDays(d, 1)) {
       const j = this.judge(this.plan(d, s), log[d], now, s);
       if (j.result) {
@@ -395,8 +430,9 @@ const Calc = {
         }
       }
       // その日に選んだ相棒・交配をあてはめる
-      acts.filter(x => x.t.slice(0, 10) === d).forEach(x => {
+      acts.filter(x => x.t.slice(0, 10) === d || (d === s.start && x.t.slice(0, 10) < d)).forEach(x => {
         if (x.a0 === 'pick' && own[x.id]) partner = x.id;
+        if (x.a0 === 'grad') { if (x.hyb) hybrids[x.id] = x.hyb; for (let k = 0; k < x.n; k++) get(x.id, x.imp ? 'move' : 'study'); }
         if (x.a0 === 'breed' && x.a !== x.b && own[x.a] >= 2 && own[x.b] >= 2 && !hybrids[x.id]) {
           own[x.a]--; own[x.b]--; hybrids[x.id] = { a: x.a, b: x.b }; get(x.id, 'breed');
         }
@@ -410,8 +446,51 @@ const Calc = {
     const r = rng(seed), ws = RARITY.map((x, i) => i < minR ? 0 : x.w);
     let x = r() * ws.reduce((a, b) => a + b), k = 0;
     while (x >= ws[k]) x -= ws[k++];
-    const pool = BEASTS.filter(b => b.r === k);
+    const pool = BEASTS.filter(b => b.r === k && b.id <= MORNING);
     return pool[Math.floor(r() * pool.length)].id;
+  },
+  // 勉強の卵から生まれる霊獣。164種ぜんぶから。半分は勉強でしか会えない霊獣のなかから
+  egg(seed) {
+    const r = rng(seed), ws = RARITY.map(x => x.w);
+    let x = r() * ws.reduce((a, b) => a + b), k = 0;
+    while (x >= ws[k]) x -= ws[k++];
+    const all = BEASTS.filter(b => b.r === k), only = all.filter(b => b.study);
+    const pool = only.length && r() < .5 ? only : all;
+    return String(pool[Math.floor(r() * pool.length)].id);
+  },
+  // ---- 勉強 ----
+  // 週は月曜はじまり。その週の月曜の日付で呼ぶ
+  week(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return this.ymd(x); },
+  // その週の目標(分)。目標を変えた週から先はその値
+  goalFor(ss, w) {
+    const ks = Object.keys(ss.goals || {}).sort();
+    if (!ks.length) return 600;
+    const k = ks.filter(x => x <= w).pop() || ks[0];
+    return ss.goals[k];
+  },
+  // 霊獣のようす。週の目標ぶん勉強するたびに次の姿(卵→幼獣→若獣→成獣→神獣)。記録を消すとその分もどる
+  // 日曜24時にその週の勉強が目標に届いていなければ、天に還る
+  study(list, ss, now) {
+    const cur = this.week(now), goal = this.goalFor(ss, cur);
+    const byWeek = {};
+    list.forEach(e => { const w = this.week(new Date(e.at)); byWeek[w] = (byWeek[w] || 0) + e.min; });
+    const total = byWeek[cur] || 0;
+    const hist = [];
+    for (let w = ss.from; w && w < cur; w = this.addDays(w, 7)) { const g = this.goalFor(ss, w), m = byWeek[w] || 0; hist.unshift({ w, m, g, ok: m >= g }); }
+    const pets = (ss.pets || []).filter(p => !p.imp), p = pets[pets.length - 1];
+    let died = null;
+    if (p) for (let w = [this.week(new Date(p.t)), ss.from].sort().pop(); w < cur; w = this.addDays(w, 7)) {
+      if ((byWeek[w] || 0) < this.goalFor(ss, w)) { died = w; break; }
+    }
+    const xp = p ? list.filter(e => e.at >= p.t).reduce((a, e) => a + e.min, 0) : 0;
+    const stage = Math.min(4, Math.floor(xp / goal));
+    const frac = stage >= 4 ? 1 : (xp - stage * goal) / goal, toNext = stage >= 4 ? 0 : (stage + 1) * goal - xp;
+    // 今週の進みぐあい。経った時間より勉強が遅れているほど弱っていく
+    const elapsed = Math.min(1, Math.max(0, (now - this.parse(cur)) / (7 * 864e5)));
+    const pr = goal > 0 ? total / goal : 1, lag = elapsed - pr;
+    const mood = pr >= 1 ? 'happy' : lag <= 0 ? 'genki' : lag < .15 ? 'normal' : lag < .35 ? 'weak' : 'dying';
+    const daysLeft = 7 - (now.getDay() + 6) % 7, remain = Math.max(0, goal - total);
+    return { cur, goal, total, pr, elapsed, mood, daysLeft, remain, perDay: Math.ceil(remain / daysLeft), pet: p, gen: pets.length, died, xp, stage, frac, toNext, hist };
   },
   // レベル1→2は40、そこから1レベルごとに必要な経験値が20ずつ増える
   level(xp, stages = STAGES) {
@@ -500,6 +579,7 @@ const S = {
   habits: store.get('ha-habits', []),     // { id, name, days: [曜日の数字] }
   hlog: store.get('ha-hlog', {}),         // { 'YYYY-MM-DD': [日課のid] }
   todos: store.get('ha-todos', []),       // { id, text, due, done }
+  study: store.get('ha-study', []),       // 勉強の記録 { id, s: 教科のid, min, at: 始めた時刻(ms) }
   edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false, sugOpen: store.get('ha-sugopen', true), bulk: false, newEvery: false, editing: null, ed: { every: 0, days: [] },
   dex: null, breedFrom: null,
 };
@@ -517,11 +597,26 @@ function migrate(st) {
   return st;
 }
 migrate(S.settings);
+// 勉強の設定と霊獣。pets は生まれた順。最後の1体が今の子。卒業したら end: { t, k: 'grad' }、天に還ったあと次の卵を迎えたら end: { t, k: 'gone', w }
+const SCOLORS = ['#2f4f8f', '#b23a28', '#3f7f6f', '#b88a2c', '#6b4f8f', '#9c2f4f', '#2a6f8f', '#5a5a5a'];
+function newPet(ss, name, t) {
+  const p = { id: uid(), t, name: name || 'もち', sp: Calc.egg(uid() + '|' + t) };
+  if (ss.nextEgg) { p.sp = 'h' + uid(); p.hyb = { a: ss.nextEgg.a, b: ss.nextEgg.b }; delete ss.nextEgg; }
+  return p;
+}
+function studyInit(st) {
+  if (st.study) return;
+  const t = now();
+  st.study = { goals: { [Calc.week(t)]: 600 }, from: Calc.week(t), timer: null,
+    subjects: [{ id: 's1', name: '英語', color: SCOLORS[0] }, { id: 's2', name: '数学', color: SCOLORS[1] }, { id: 's3', name: '国語', color: SCOLORS[2] }], pets: [] };
+  st.study.pets.push(newPet(st.study, 'もち', +t));
+}
+studyInit(S.settings);
 S.hlogU = store.get('ha-hlogu', {});     // 日課のチェックを日ごとに最後に変えた時刻
 S.dead = store.get('ha-dead', {});       // 消した日課・TODO { id: { u } }
 const persist = () => {
   store.set('ha-settings', S.settings); store.set('ha-log', S.log); store.set('ha-habits', S.habits); store.set('ha-hlog', S.hlog);
-  store.set('ha-todos', S.todos); store.set('ha-hlogu', S.hlogU); store.set('ha-dead', S.dead);
+  store.set('ha-todos', S.todos); store.set('ha-hlogu', S.hlogU); store.set('ha-dead', S.dead); store.set('ha-study', S.study);
 };
 // どこを変えても、保存のときに前回とくらべて変わったものに更新時刻(u)をつけ、スプレッドシートに送る
 const save = () => { Sync.stamp(); persist(); Sync.soon(); };
@@ -529,7 +624,7 @@ const saveTasks = save, saveSettings = save, saveLog = save;
 
 // ---- スプレッドシートとの同期 ----
 // 記録は種類ごとに { id: 中身 } にして送る。同じものは更新時刻(u)が新しいほうが勝つ
-const KINDS = ['settings', 'log', 'hlog', 'habits', 'todos'];
+const KINDS = ['settings', 'log', 'hlog', 'habits', 'todos', 'study'];
 const bare = v => { const c = Object.assign({}, v); delete c.u; return JSON.stringify(c); };
 const Sync = {
   conf: store.get('ha-api', null),       // { url, key }
@@ -540,7 +635,7 @@ const Sync = {
     return {
       settings: { main: S.settings }, log: Object.assign({}, S.log),
       hlog: Object.fromEntries(Object.keys(S.hlog).map(d => [d, { ids: S.hlog[d], u: S.hlogU[d] || 0 }])),
-      habits: byId(S.habits), todos: byId(S.todos), dead: Object.assign({}, S.dead),
+      habits: byId(S.habits), todos: byId(S.todos), study: byId(S.study), dead: Object.assign({}, S.dead),
     };
   },
   snapshot(doc) { const o = {}; KINDS.forEach(k => { o[k] = {}; Object.keys(doc[k]).forEach(id => o[k][id] = bare(doc[k][id])); }); return o; },
@@ -555,7 +650,7 @@ const Sync = {
       });
       Object.keys(before).forEach(id => {
         if (id in doc[k]) return;
-        if (k === 'habits' || k === 'todos') S.dead[id] = { u: t };
+        if (k === 'habits' || k === 'todos' || k === 'study') S.dead[id] = { u: t };
         else if (k === 'log') S.log[id] = { u: t };
         else if (k === 'hlog') { S.hlog[id] = []; S.hlogU[id] = t; }
       });
@@ -578,6 +673,8 @@ const Sync = {
     S.dead = doc.dead;
     S.habits = Object.values(doc.habits).filter(x => !S.dead[x.id]);
     S.todos = Object.values(doc.todos).filter(x => !S.dead[x.id]);
+    S.study = Object.values(doc.study || {}).filter(x => !S.dead[x.id]);
+    studyInit(S.settings);
     this.seen = this.snapshot(this.doc()); store.set('ha-seen', this.seen);
     persist();
   },
@@ -663,19 +760,20 @@ function petCard(st) {
 function dexView(st) {
   const m = st.mon;
   if (S.dex !== 'grid') return dexDetail(st, S.dex);
-  const cells = BEASTS.map(b => {
+  const cell = b => {
     const id = String(b.id), no = String(b.id).padStart(3, '0');
     if (!m.seen[id]) return `<div class="cell unk"><span class="no">其ノ${no}</span><span class="q">？</span></div>`;
     const n = m.own[id] || 0;
     return `<button class="cell r${b.r} ${n ? '' : 'gone'}" data-m="see" data-id="${id}"><span class="no">其ノ${no}</span>${artHTML(b, 'mini')}
       <span class="nm">${esc(b.k)}</span><span class="stars">${n ? '★'.repeat(stars(n)) : '逃走'}</span></button>`;
-  }).join('');
+  };
+  const cells = BEASTS.filter(b => b.id <= MORNING).map(cell).join(''), scells = BEASTS.filter(b => b.id > MORNING).map(cell).join('');
   const hy = Object.keys(m.hybrids).map(id => { const b = beast(id, m), n = m.own[id] || 0;
     return `<button class="cell r${b.r} ${n ? '' : 'gone'}" data-m="see" data-id="${id}"><span class="no">異種</span>${artHTML(b, 'mini')}<span class="nm">${esc(b.k)}</span><span class="stars">${n ? '★' : '逃走'}</span></button>`; }).join('');
   const found = Object.keys(m.seen).filter(id => !id.startsWith('h')).length;
   return `<div class="ov"><div class="inner"><div class="ovhead"><h1>妖 魔 図 鑑</h1><button class="x" data-m="close" aria-label="閉じる">✕</button></div>
     <p class="note">記されし魔物 ${found} / ${BEASTS.length}。完全に目覚めた朝ごとに、一体が召喚に応じる。</p>
-    <div class="dexgrid">${cells}</div>${hy ? `<h2 class="sec">異種交配</h2><div class="dexgrid">${hy}</div>` : ''}</div></div>`;
+    <div class="dexgrid">${cells}</div><h2 class="sec">勉強の霊獣</h2><p class="note">朝には現れない。勉強の卵から神獣まで育てて卒業させると、ここに記される。</p><div class="dexgrid">${scells}</div>${hy ? `<h2 class="sec">異種交配</h2><div class="dexgrid">${hy}</div>` : ''}</div></div>`;
 }
 function dexDetail(st, id) {
   const m = st.mon, b = beast(id, m); if (!b) { S.dex = 'grid'; return dexView(st); }
@@ -690,7 +788,7 @@ function dexDetail(st, id) {
     act = `<div class="acts">${isP ? '<div class="btn on">いまの相棒</div>' : `<button class="btn main" data-m="pick" data-id="${id}">相棒にする</button>`}
       ${!b.a && n >= 2 ? `<button class="btn" data-m="breed" data-id="${id}" ${mates.length ? '' : 'disabled'}>交配する${mates.length ? '' : '（★2の相手がいない）'}</button>` : ''}</div>
       ${!b.a && n < 2 ? '<p class="note">同じ魔物がもう一体来ると合体して★2に。★2どうしなら交配できる。</p>' : ''}`;
-  } else act = '<p class="note">寝坊の朝に逃げ去った。もう一度召喚に応じるのを待て。</p>';
+  } else act = `<p class="note">寝坊の朝に逃げ去った。${b.study ? '勉強の卵からもう一度育てよう。' : 'もう一度召喚に応じるのを待て。'}</p>`;
   return `<div class="ov"><div class="inner detail"><div class="ovhead"><button class="x" data-m="back" aria-label="もどる">←</button><button class="x" data-m="close" aria-label="閉じる">✕</button></div>
     ${artHTML(b, 'big')}
     <div class="dname"><ruby>${esc(b.k)}<rt>${esc(b.y)}</rt></ruby></div>
@@ -703,8 +801,10 @@ function revealView(st) {
   const ev = st.mon.events, shown = store.get('ha-shown', 0);
   if (shown >= ev.length) return '';
   const e = ev[shown], b = beast(e.id, st.mon); if (!b) return '';
-  const head = e.kind === 'breed' ? '異 種 誕 生' : e.n > 1 ? '合 体' : ['召 喚', '召 喚', '降 臨', '顕 現', '神 獣 降 臨'][b.r];
-  const sub = e.kind === 'breed' ? '二つの血がひとつになった' : e.n > 1 ? `${b.k}が重なり ★${stars(e.n)} に` : e.kind === 'bonus' ? '七日の誓いに応え、珍しき魔物が現れた' : '朝の気配に応え、魔物が現れた';
+  const head = e.kind === 'breed' ? '異 種 誕 生' : e.kind === 'study' ? '卒 業' : e.kind === 'move' ? '引 越' : e.n > 1 ? '合 体' : ['召 喚', '召 喚', '降 臨', '顕 現', '神 獣 降 臨'][b.r];
+  const sub = e.kind === 'breed' ? '二つの血がひとつになった' : e.kind === 'study' ? `勉強で育てた霊獣が仲間に加わった${e.n > 1 ? ` ・ ★${stars(e.n)}` : ''}`
+    : e.kind === 'move' ? `山海勉強録の広場から移ってきた${e.n > 1 ? ` ・ ★${stars(e.n)}` : ''}`
+    : e.n > 1 ? `${b.k}が重なり ★${stars(e.n)} に` : e.kind === 'bonus' ? '七日の誓いに応え、珍しき魔物が現れた' : '朝の気配に応え、魔物が現れた';
   return `<div class="ov reveal r${b.r}" data-m="next"><div class="ring"></div>
     <div class="rhead">${head}</div>${artHTML(b, 'big')}<div class="dname">${esc(b.k)}</div>
     <div class="label">${RARITY[b.r].name} ・ ${esc(sub)}</div><div class="tap">タップして続ける${ev.length - shown > 1 ? `（あと${ev.length - shown - 1}）` : ''}</div></div>`;
@@ -883,9 +983,111 @@ function recapView(r) {
     ${r.habits.map(h => row(h.id, h.name, 'rhab', '日課')).join('')}${r.todos.map(x => row(x.id, x.text, 'rtodo', 'TODO・昨日まで')).join('')}
     <button class="btn" data-t="rclose">残りはやってない（閉じる）</button></section></div>`;
 }
+// ---- 勉強 ----
+const PSTAGES = ['卵', '幼獣', '若獣', '成獣', '神獣'];
+const MOOD = { happy: ['上機嫌', 'good'], genki: ['元気', 'good'], normal: ['平静', ''], weak: ['衰弱', 'warn'], dying: ['瀕死', 'bad'] };
+const fmtMin = m => { m = Math.round(m); const h = Math.floor(m / 60), r = m % 60; return h ? (r ? `${h}時間${r}分` : `${h}時間`) : `${r}分`; };
+const md = ymd => `${Number(ymd.slice(5, 7))}/${Number(ymd.slice(8))}`;
+const subjOf = id => S.settings.study.subjects.find(x => x.id === id) || { id, name: '消した教科', color: '#7a6a55' };
+const petBeast = p => p.hyb ? beast(p.sp, { hybrids: { [p.sp]: p.hyb } }) : BEASTS[Number(p.sp) - 1];
+const clockText = () => { const tm = S.settings.study.timer; if (!tm) return '00:00:00'; const x = Math.max(0, Math.floor((now() - tm.at) / 1000));
+  return Calc.pad(Math.floor(x / 3600)) + ':' + Calc.pad(Math.floor(x / 60) % 60) + ':' + Calc.pad(x % 60); };
+
+function studyPetCard(z) {
+  const ss = S.settings.study, p = z.pet, [ml, mc] = MOOD[z.mood];
+  const eggForm = (label, kind) => `<form class="add" data-form="${kind}"><input type="text" name="name" placeholder="新しい子の名前" maxlength="12" autocomplete="off"><button class="btn main">${label}</button></form>
+    <p class="note">${ss.nextEgg ? `次に来るのは交配の卵（${esc(beast(ss.nextEgg.a).k)} × ${esc(beast(ss.nextEgg.b).k)}）。` : 'どの霊獣が生まれるかは、卵がかえるまでわからない。'}</p>`;
+  if (z.died) return `<section class="card"><div class="pet"><div class="art egg grave" id="face3"><span class="glyph">墓</span></div>
+    <div class="info"><div class="title">天に還った霊獣</div><div class="name">${esc(p.name)}</div>
+    <div class="label">${md(z.died)}からの週は ${fmtMin(z.hist.find(h => h.w === z.died)?.m || 0)}（目標 ${fmtMin(Calc.goalFor(ss, z.died))}）で、目標に届かなかった</div></div></div>
+    ${eggForm('新しい卵を迎える', 'egg')}</section>`;
+  const b = petBeast(p), st = z.stage;
+  const face = st === 0 ? `<div class="art egg" id="face3"><span class="glyph">卵</span></div>` : artHTML(b, 'st' + (st - 1) + (z.mood === 'weak' || z.mood === 'dying' ? ' ill' : ''), 'face3');
+  const who = st === 0 ? '正体不明' : `${esc(b.k)}（${esc(b.y || '異種')}）`;
+  const status = z.pr >= 1 ? `今週の目標は達成。日曜をこえても${esc(p.name)}は無事` : `あと ${fmtMin(z.remain)}。残り${z.daysLeft}日なので1日あたり約${fmtMin(z.perDay)}`;
+  const grow = st >= 4
+    ? `<div class="grad"><b>${esc(p.name)}は神獣「${esc(b.k)}」として目覚めた。</b><p class="note">卒業させると図鑑の仲間になる。同じ魔物がいれば合体して★が上がり、相棒や交配にも使える。</p>${eggForm('卒業させて次の卵へ', 'grad')}</div>`
+    : `<div class="label">成長 ・ 次の姿「${PSTAGES[st + 1]}」まで あと${fmtMin(z.toNext)}</div><div class="bar violet"><div style="width:${Math.round(z.frac * 100)}%"></div></div>`;
+  return `<section class="card"><div class="pet">${face}
+    <div class="info"><div class="title">霊獣 ・ ${z.gen}代目</div><div class="name">${esc(p.name)} <span class="label">${PSTAGES[st]}</span></div>
+      <div class="label">${who}</div>
+      <div class="pills"><span class="pill ${mc}">${ml}</span></div></div></div>
+    <div class="wk"><span><b>${fmtMin(z.total)}</b> <span class="label">／ 今週の目標 ${fmtMin(z.goal)}</span></span><span class="label">${Math.min(999, Math.round(z.pr * 100))}%</span></div>
+    <div class="bar pace ${mc}"><div style="width:${Math.min(100, z.pr * 100)}%"></div><i style="left:${z.elapsed * 100}%"></i></div>
+    <div class="label">${status}</div>${grow}
+    <p class="note">週の目標ぶん勉強するたびに次の姿へ（卵→幼獣→若獣→成獣→神獣）。記録を消すとその分もどる。日曜24時に今週の目標に届いていないと、天に還ってしまう。</p></section>`;
+}
+function timerCard(t) {
+  const ss = S.settings.study, tm = ss.timer, today = Calc.ymd(t), none = !ss.subjects.length;
+  const opts = sel => ss.subjects.map(x => `<option value="${x.id}" ${x.id === sel ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+  return `<section class="card"><div class="head"><h2>勉強タイマー</h2>${tm ? `<span class="label">計測中 ・ ${esc(subjOf(tm.s).name)}</span>` : ''}</div>
+    <div class="clock ${tm ? 'on' : ''}" data-clock>${clockText()}</div>
+    ${tm ? `<button class="big study" data-s="stop">記 録<small>終わって記録する</small></button><button class="linkbtn" style="color:var(--quiet)" data-s="cancel">取り消す</button>`
+      : `<form class="add" data-form="start"><select name="s" ${none ? 'disabled' : ''}>${opts(S.lastSubj)}</select><button class="btn main" ${none ? 'disabled' : ''}>スタート</button></form>`}
+    <h2 style="margin-top:16px">あとから手で追加</h2>
+    <form class="add" data-form="manual"><select name="s" ${none ? 'disabled' : ''}>${opts(S.lastSubj)}</select>
+      <input type="date" name="d" min="${Calc.week(t)}" max="${today}" value="${today}" aria-label="日付">
+      <input type="number" name="h" min="0" max="23" value="0" inputmode="numeric" aria-label="時間" class="hm"><span class="label">時間</span>
+      <input type="number" name="m" min="0" max="59" step="5" value="30" inputmode="numeric" aria-label="分" class="hm"><span class="label">分</span>
+      <button class="btn main">追加</button></form>
+    ${none ? '<p class="note">下の設定で教科を足すと記録できます</p>' : ''}</section>`;
+}
+function studyChart(z, t) {
+  const ss = S.settings.study, cur = z.cur;
+  const list = S.study.filter(e => Calc.week(new Date(e.at)) === cur);
+  const days = [0, 1, 2, 3, 4, 5, 6].map(() => ({})), by = {};
+  list.forEach(e => { const k = (new Date(e.at).getDay() + 6) % 7; days[k][e.s] = (days[k][e.s] || 0) + e.min; by[e.s] = (by[e.s] || 0) + e.min; });
+  const tot = days.map(o => Object.values(o).reduce((a, b) => a + b, 0)), target = z.goal / 7;
+  const ymax = Math.max(60, target * 1.25, ...tot.map(v => v * 1.15));
+  const W = 700, top = 26, bot = 196, left = 12, colW = (W - left * 2) / 7, bw = Math.min(54, colW * .55), y = v => bot - v / ymax * (bot - top);
+  const ti = (t.getDay() + 6) % 7;
+  const ids = [...ss.subjects.map(x => x.id), ...Object.keys(by).filter(k => !ss.subjects.some(x => x.id === k))];
+  let svg = `<svg viewBox="0 0 ${W} 230" role="img" aria-label="曜日ごとの勉強時間"><line x1="${left}" x2="${W - left}" y1="${bot}" y2="${bot}" stroke="#3a2e20" stroke-width="1.5"/>`;
+  days.forEach((o, i) => {
+    const cx = left + colW * i + colW / 2; let acc = 0;
+    ids.forEach(id => { const v = o[id]; if (!v) return; const y0 = y(acc), y1 = y(acc + v); acc += v;
+      svg += `<rect x="${cx - bw / 2}" y="${y1}" width="${bw}" height="${Math.max(1, y0 - y1)}" fill="${subjOf(id).color}"><title>${esc(subjOf(id).name)} ${fmtMin(v)}</title></rect>`; });
+    if (tot[i]) svg += `<text x="${cx}" y="${y(tot[i]) - 7}" text-anchor="middle" font-size="15" fill="#ebe0c8">${fmtMin(tot[i])}</text>`;
+    svg += `<text x="${cx}" y="${bot + 24}" text-anchor="middle" font-size="16" fill="${i === ti ? '#ff7a4a' : '#9a8a70'}">${'月火水木金土日'[i]}</text>`;
+  });
+  svg += `<line x1="${left}" x2="${W - left}" y1="${y(target)}" y2="${y(target)}" stroke="#9a8a70" stroke-dasharray="5 5" stroke-width="1.5"/>
+    <text x="${W - left}" y="${y(target) - 6}" text-anchor="end" font-size="13" fill="#9a8a70">1日の目安 ${fmtMin(target)}</text></svg>`;
+  const sum = list.reduce((a, e) => a + e.min, 0);
+  const rows = Object.keys(by).sort((a, b) => by[b] - by[a]).map(id => { const x = subjOf(id), v = by[id];
+    return `<div class="subj"><span class="chip"><i style="background:${x.color}"></i>${esc(x.name)}</span><span class="sb"><i style="width:${v / sum * 100}%;background:${x.color}"></i></span><span>${fmtMin(v)}</span></div>`; }).join('');
+  return `<section class="card"><div class="head"><h2>今週の勉強</h2><span class="label">${md(cur)}〜${md(Calc.addDays(cur, 6))} ・ 合計 ${fmtMin(sum)}</span></div>
+    <div class="chart">${svg}</div>${rows || '<div class="empty">今週の記録はまだない。タイマーをスタートするか、手で追加すると、曜日別・教科別の時間が出ます</div>'}</section>`;
+}
+function entriesCard(z) {
+  const list = S.study.filter(e => Calc.week(new Date(e.at)) === z.cur).sort((a, b) => b.at - a.at);
+  return `<section class="card"><div class="head"><h2>今週の記録</h2><span class="label">${list.length}件</span></div>
+    ${list.map(e => { const x = subjOf(e.s), d = new Date(e.at);
+      return `<div class="item"><div class="what"><span class="chip"><i style="background:${x.color}"></i>${esc(x.name)}</span> ${fmtMin(e.min)}<small>${d.getMonth() + 1}/${d.getDate()}(${WD[d.getDay()]}) ${Calc.hm(d)}</small></div>
+        <button class="del" data-s="edel" data-id="${e.id}" aria-label="この記録を消す">✕</button></div>`; }).join('') || '<div class="empty">記録するとここに並びます</div>'}</section>`;
+}
+function studySettings(z) {
+  const ss = S.settings.study;
+  const graves = [...(ss.graves || []), ...ss.pets.filter(p => !p.imp && p.end && p.end.k === 'gone').map(p => ({ name: p.name, born: Calc.week(new Date(p.t)), died: p.end.w }))];
+  return `<section class="card"><details${S.sOpen ? ' open' : ''} data-s-open><summary>勉強の設定・これまで</summary>
+    <div class="grid"><label>週の目標（時間）</label><input type="number" min="0.5" max="100" step="0.5" data-sk="goal" value="${z.goal / 60}">
+      ${z.died ? '' : `<label>霊獣の名前</label><input type="text" maxlength="12" data-sk="name" value="${esc(z.pet.name)}">`}</div>
+    <h2 style="margin-top:18px">教科</h2>
+    ${ss.subjects.map(x => `<div class="item"><div class="what"><span class="chip"><i style="background:${x.color}"></i>${esc(x.name)}</span>
+      <span class="sw">${SCOLORS.map(c => `<button style="background:${c}" class="${c === x.color ? 'on' : ''}" data-s="color" data-id="${x.id}" data-c="${c}" aria-label="色を変える"></button>`).join('')}</span></div>
+      <button class="del" data-s="sdel" data-id="${x.id}" aria-label="${esc(x.name)}を消す">✕</button></div>`).join('') || '<div class="empty">教科がありません</div>'}
+    <form class="add" data-form="subj"><input type="text" name="name" placeholder="例：物理、世界史、TOEIC" maxlength="16" autocomplete="off"><button class="btn main">教科を追加</button></form>
+    <h2 style="margin-top:18px">これまでの週</h2>
+    ${z.hist.slice(0, 12).map(h => `<div class="item"><div class="what">${md(h.w)}〜${md(Calc.addDays(h.w, 6))}</div><span class="label">${fmtMin(h.m)} / ${fmtMin(h.g)}</span><span class="due ${h.ok ? 'ok' : 'over'}">${h.ok ? '達成' : '未達'}</span></div>`).join('') || '<div class="empty">最初の週が終わると、ここに結果が残ります</div>'}
+    ${graves.length ? `<h2 style="margin-top:18px">お墓</h2>${graves.map(g => `<div class="item"><div class="what">${esc(g.name)}<small>${g.born ? md(g.born) + '生まれ' : ''}${g.died ? ' ・ ' + md(g.died) + 'の週に天に還った' : ''}</small></div></div>`).join('')}` : ''}
+    <h2 style="margin-top:18px">山海勉強録から引っ越す</h2>
+    <p class="note">山海勉強録の設定にある「データを書き出す」で保存したファイルを選ぶか、中身を貼りつけてください。勉強の記録・教科・目標・今の霊獣が引っ越してきて、広場の霊獣は図鑑の仲間になります。今の勉強の霊獣は上書きされます。</p>
+    <form class="add" data-form="import"><input type="file" name="file" accept=".json,application/json"><textarea name="text" rows="3" placeholder="ここに貼りつけてもOK"></textarea><button class="btn main">読みこむ</button></form>
+  </details></section>`;
+}
 function tabsBar() {
   return `${Sync.conf ? `<div class="status" id="syncstatus">${esc(Sync.status)}</div>` : ''}<nav class="tabs"><button class="${S.tab === 'wake' ? 'on' : ''}" data-t="tab" data-v="wake"><b>暁</b> 早起き</button>
-    <button class="${S.tab === 'tasks' ? 'on' : ''}" data-t="tab" data-v="tasks"><b>修</b> TODO・日課</button></nav>`;
+    <button class="${S.tab === 'tasks' ? 'on' : ''}" data-t="tab" data-v="tasks"><b>修</b> TODO・日課</button>
+    <button class="${S.tab === 'study' ? 'on' : ''}" data-t="tab" data-v="study"><b>学</b> 勉強</button></nav>`;
 }
 
 const WIDE = window.matchMedia('(min-width: 1000px)');
@@ -895,13 +1097,14 @@ function render() {
   const t = now();
   const open = $('details') && $('details').open;
   // 曜日をえらんだりチェックしたりしても、書きかけの入力は消さない
-  const keep = [...document.querySelectorAll('form[data-form] input, form[data-form] textarea')].map(i => [i.form.dataset.form, i.name, i.value]);
+  const keep = [...document.querySelectorAll('form[data-form] input:not([type=file]), form[data-form] textarea, form[data-form] select')].map(i => [i.form.dataset.form, i.name, i.value]);
   const focused = document.activeElement && document.activeElement.form && document.activeElement.name ? [document.activeElement.form.dataset.form, document.activeElement.name] : null;
   const st = Calc.stats(S.log, S.settings, t);
   const wake = () => petCard(st) + todayCard(t) + weeksCard(t) + settingsCard();
   const habits = () => gardenCard(Calc.garden(S, Calc.ymd(t)), t) + habitsCard(t);
-  if (WIDE.matches) $('#app').innerHTML = `<div class="cols"><div>${wake()}</div><div>${habits()}</div><div>${todosCard(t)}</div></div>` + tabsBar();
-  else $('#app').innerHTML = (S.tab === 'tasks' ? habits() + todosCard(t) : wake()) + tabsBar();
+  const study = () => { const z = Calc.study(S.study, S.settings.study, t); return studyPetCard(z) + timerCard(t) + studyChart(z, t) + entriesCard(z) + studySettings(z); };
+  if (WIDE.matches) $('#app').innerHTML = `<div class="cols"><div>${wake()}</div><div>${habits()}</div><div>${todosCard(t)}</div><div>${study()}</div></div>` + tabsBar();
+  else $('#app').innerHTML = (S.tab === 'tasks' ? habits() + todosCard(t) : S.tab === 'study' ? study() : wake()) + tabsBar();
   const rc = recapItems(t);
   const ovs = (S.dex ? dexView(st) : '') + revealView(st) + (rc ? recapView(rc) : '');
   if (ovs) $('#app').insertAdjacentHTML('beforeend', ovs);
@@ -1084,10 +1287,133 @@ document.addEventListener('submit', e => {
   const inp = $(`[data-form=${f.dataset.form}] [name=text], [data-form=${f.dataset.form}] [name=name]`); if (inp) inp.focus();
 });
 
+// 勉強の操作
+function addStudy(sid, min, at) {
+  const t = now(), before = Calc.study(S.study, S.settings.study, t);
+  S.study.push({ id: uid(), s: sid, min, at });
+  S.lastSubj = sid; save(); render();
+  const after = Calc.study(S.study, S.settings.study, t);
+  const b = after.pet && petBeast(after.pet);
+  if (!after.died && after.stage > before.stage) pop(before.stage === 0 ? `孵化 ・ ${b.k}` : PSTAGES[after.stage] + 'へ', '#face3');
+  else pop(`${subjOf(sid).name} +${fmtMin(min)}`, '#face3');
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-s]'); if (!b) return;
+  const ss = S.settings.study, id = b.dataset.id;
+  switch (b.dataset.s) {
+    case 'stop': {
+      const tm = ss.timer; if (!tm) return;
+      ss.timer = null;
+      const min = Math.min(24 * 60, Math.round((now() - tm.at) / 60000));
+      if (min < 1) { save(); render(); pop('1分未満'); return; }
+      addStudy(tm.s, min, tm.at); return;
+    }
+    case 'cancel': if (!confirm('タイマーを取り消しますか？（記録しません）')) return; ss.timer = null; break;
+    case 'edel': { const x = S.study.find(x => x.id === id); if (!x || !confirm(`${subjOf(x.s).name} ${fmtMin(x.min)} の記録を消しますか？（霊獣の成長もその分もどります）`)) return;
+      S.study = S.study.filter(x => x.id !== id); break; }
+    case 'sdel': { const x = ss.subjects.find(x => x.id === id); if (!x || !confirm(`教科「${x.name}」を消しますか？（記録は残ります）`)) return;
+      ss.subjects = ss.subjects.filter(x => x.id !== id); break; }
+    case 'color': { const x = ss.subjects.find(x => x.id === id); if (x) x.color = b.dataset.c; break; }
+    default: return;
+  }
+  save(); render();
+});
+document.addEventListener('toggle', e => { if (e.target.matches && e.target.matches('[data-s-open]')) S.sOpen = e.target.open; }, true);
+document.addEventListener('change', e => {
+  const el = e.target, k = el.dataset.sk; if (!k) return;
+  const ss = S.settings.study, t = now();
+  if (k === 'goal') { const v = Number(el.value); if (!(v >= .5 && v <= 100)) { render(); return; } ss.goals = Object.assign({}, ss.goals, { [Calc.week(t)]: Math.round(v * 60) }); }
+  if (k === 'name') { const v = el.value.trim(); const z = Calc.study(S.study, ss, t); if (!v || !z.pet) return; z.pet.name = v; }
+  save(); render();
+});
+document.addEventListener('submit', async e => {
+  const f = e.target, ss = S.settings.study, t = now();
+  e.preventDefault();
+  if (!['start', 'manual', 'egg', 'grad', 'subj', 'import'].includes(f.dataset.form)) return;
+  if (f.dataset.form === 'start') {
+    const sid = f.elements['s'].value; if (!sid) return;
+    S.lastSubj = sid; ss.timer = { s: sid, at: +t };
+  } else if (f.dataset.form === 'manual') {
+    const sid = f.elements['s'].value, dv = f.elements['d'].value;
+    const min = (parseInt(f.elements['h'].value, 10) || 0) * 60 + (parseInt(f.elements['m'].value, 10) || 0);
+    if (!sid) return;
+    if (min < 1 || min > 1440) { alert('時間は1分から24時間のあいだで入れてね'); return; }
+    if (!dv || dv < Calc.week(t) || dv > Calc.ymd(t)) { alert('日付は今週の月曜から今日までをえらんでね'); return; }
+    const at = dv === Calc.ymd(t) ? +t : Calc.parse(dv).setHours(20, 0, 0, 0);
+    addStudy(sid, min, at); return;
+  } else if (f.dataset.form === 'egg' || f.dataset.form === 'grad') {
+    const z = Calc.study(S.study, ss, t), p = z.pet, name = f.elements['name'].value.trim();
+    if (f.dataset.form === 'grad') {
+      if (z.stage < 4 || z.died) return;
+      if (!name) { f.elements['name'].focus(); f.elements['name'].placeholder = '次の子の名前を入れてね'; return; }
+      p.end = { t: +t, k: 'grad' };
+    } else p.end = { t: +t, k: 'gone', w: z.died };
+    ss.pets.push(newPet(ss, name, +t));
+  } else if (f.dataset.form === 'subj') {
+    const name = f.elements['name'].value.trim(); if (!name) return;
+    if (ss.subjects.some(x => x.name === name)) { alert(`「${name}」はもうあるよ`); return; }
+    ss.subjects.push({ id: 's' + uid(), name, color: SCOLORS[ss.subjects.length % SCOLORS.length] });
+  } else if (f.dataset.form === 'import') {
+    const file = f.elements['file'].files && f.elements['file'].files[0];
+    let data;
+    try { data = JSON.parse((file ? await file.text() : f.elements['text'].value).trim()); } catch (err) { alert('読みこめませんでした。書き出したファイルを選ぶか、中身をそのまま貼りつけてね'); return; }
+    if (!data || data.app !== 'benkyo-pet' || !data.settings || typeof data.weeks !== 'object') { alert('山海勉強録のデータではないようです'); return; }
+    const r = importBenkyo(data, t);
+    if (!confirm(`勉強の記録 ${r.entries}件、広場の霊獣 ${r.plaza}体（★あわせて${r.stars}）を引っ越します。今の勉強の霊獣は上書きされます。よいですか？`)) return;
+    r.apply(); S.sOpen = false;
+    save(); render(); window.scrollTo(0, 0); return;
+  }
+  f.reset(); save(); render();
+});
+// 山海勉強録(benkyo-pet)の書き出しファイルを、この形に直す
+const BP_OLD = { slime: 'teikou', neko: 'kyubi', tori: 'hippou', usagi: 'kyubi', kuma: 'shokai', ryu: 'ouryu', saikyo: 'fei', reiko: 'shokai', reirei: 'rokushoku', seiseigyu: 'fei', gouyu: 'goutei',
+  toukou: 'goutei', toutou: 'heihou', ji: 'kanso', bougyu: 'gouin', kyuki: 'sugo', ryoukyo: 'tenkou', mougyoku: 'sou', kaimei: 'rikugo', rara: 'sugo', kou: 'shoushou', katsuso: 'shoushou', sojo: 'hiso',
+  keihen: 'shoushou', hihi: 'tenkou', kitsuryou: 'tenba', shuen: 'chouyuu', youwa: 'kyoho', seiei: 'shu', ranchou: 'kyuhou', houou: 'kyuhou', sanseichou: 'hiyoku', sushi: 'shu', shouda: 'fukei',
+  chin: 'hippou', kinhi: 'kochou', shunchou: 'kujo', atsuyu: 'ouryu', enni: 'souryu', kou2: 'ouryu', zeni: 'yuugyo', kokou: 'riku', shiniku: 'teikou', fusho: 'kakujo', jukuko: 'eishou' };
+const bpId = id => FROM_BP[id] || FROM_BP[BP_OLD[id]] || null;
+function importBenkyo(data, t) {
+  const st = data.settings, entries = [];
+  Object.keys(data.weeks).forEach(w => (data.weeks[w].entries || []).forEach(e => {
+    if (e && e.min > 0 && e.at) entries.push({ id: 'bp-' + (e.id || uid()), s: e.s, min: Math.round(e.min), at: e.at });
+  }));
+  // 交配の子は、両親の絵(art)の霊獣を親にする。親がわからないときは名前から決まる霊獣に
+  const toPet = (o, rest) => {
+    const p = Object.assign({ id: 'bp-' + (o.id || uid()), name: o.name || 'もち' }, rest);
+    if (o.hyb) {
+      const [a, b] = (o.hyb.art || []).map(bpId);
+      if (a && b && a !== b) { p.sp = 'h' + uid(); p.hyb = { a: String(a), b: String(b) }; return p; }
+    }
+    p.sp = String(bpId(o.species) || (o.hyb && bpId((o.hyb.art || [])[0])) || Calc.egg(p.name + p.id));
+    return p;
+  };
+  const plaza = (st.plaza || []).map(e => toPet(e, { t: +t, imp: 1, n: Math.max(1, e.rank || 1), end: { t: +t, k: 'grad' } }));
+  const firstAt = Math.min(+t, ...entries.map(e => e.at));
+  const pet = toPet(st.pet || {}, { t: (st.pet && st.pet.bornAt) || firstAt });
+  const goals = {};
+  (st.history || []).forEach(h => { if (h.week && h.goal) goals[h.week] = h.goal; });
+  goals[Calc.week(t)] = st.goalMin || 600;
+  const weeks = [...Object.keys(data.weeks), ...(st.history || []).map(h => h.week)].filter(Boolean).sort();
+  return {
+    entries: entries.length, plaza: plaza.length, stars: plaza.reduce((a, p) => a + p.n, 0),
+    apply() {
+      const have = new Set(S.study.map(e => e.id));
+      S.study = [...S.study, ...entries.filter(e => !have.has(e.id))];
+      const ss = S.settings.study;
+      ss.subjects = (st.subjects || []).map(x => ({ id: x.id, name: x.name, color: x.color || SCOLORS[0] }));
+      ss.goals = goals;
+      ss.from = [weeks[0] || Calc.week(t), ss.from].sort()[0];
+      ss.graves = (st.graves || []).map(g => ({ name: g.name, born: g.born, died: g.died }));
+      ss.timer = st.timer && st.timer.s ? { s: st.timer.s, at: st.timer.at } : ss.timer;
+      ss.pets = [...ss.pets.filter(p => p.end && p.end.k === 'grad'), ...plaza, pet];
+      if (st.nextEgg && st.nextEgg.art) { const [a, b] = st.nextEgg.art.map(bpId); if (a && b && a !== b) ss.nextEgg = { a: String(a), b: String(b) }; }
+    },
+  };
+}
 // カウントダウンは毎秒書きかえ、段階が変わったら画面ごと描き直す
 setInterval(() => {
   const t = now();
   document.querySelectorAll('[data-until]').forEach(el => { el.textContent = mmss(el.dataset.until - t); });
+  document.querySelectorAll('[data-clock]').forEach(el => { el.textContent = clockText(); });
   const ph = Calc.judge(Calc.plan(Calc.ymd(t), S.settings), S.log[Calc.ymd(t)], t, S.settings).phase;
   if (ph !== lastPhase && (S.tab === 'wake' || WIDE.matches) && !(document.activeElement && document.activeElement.matches('input, textarea'))) render();
 }, 1000);
