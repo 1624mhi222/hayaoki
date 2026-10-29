@@ -212,6 +212,9 @@
   .art .glyph { font-family: var(--brush); color: #1a130c; font-size: calc(var(--s) * .38); line-height: 1; writing-mode: vertical-rl;
     letter-spacing: -.05em; opacity: .92; text-shadow: 0 0 1px #1a130c; }
   .art img + .glyph { opacity: 0; }
+  .art .crop { position: absolute; z-index: 1; top: 4%; bottom: 4%; left: 50%; transform: translateX(-50%); overflow: hidden; max-width: 92%; }
+  .art .crop img { position: absolute; inset: 0 auto auto 0; height: auto; max-width: none; mix-blend-mode: multiply; }
+  .art .crop + .glyph, .art.st0 .crop + .glyph { opacity: 0; }
   .art .seal { position: absolute; right: 4px; bottom: 4px; z-index: 2; font-style: normal; font-family: var(--brush); font-size: calc(var(--s) * .12);
     line-height: 1; padding: 2px 3px; color: #f7e7d6; background: #a8281c; border-radius: 2px; box-shadow: 0 0 0 1px #f7e7d633 inset; }
   .art.r1 { box-shadow: inset 0 0 22px rgba(90,60,25,.5), 0 0 0 1px #5f9e7a, 0 6px 18px rgba(0,0,0,.6); }
@@ -225,7 +228,8 @@
   .art .glyph.hy { position: relative; z-index: 0; }
   .art .half:has(img) ~ .glyph.hy { opacity: .18; }
   /* 成長段階: 幼体は小さく色がない → 成体 → 真体は金の縁 → 神格は朱の気が立つ */
-  .art.st0 img, .art.st0 .glyph { filter: grayscale(1) contrast(.9); transform: scale(.72); opacity: .8; }
+  .art.st0 > img, .art.st0 .glyph { filter: grayscale(1) contrast(.9); transform: scale(.72); opacity: .8; }
+  .art.st0 .crop { filter: grayscale(1) contrast(.9); scale: .72; opacity: .8; }
   .art.st2 { outline: 1px solid var(--gold); outline-offset: 3px; }
   .art.st3 { outline: 2px solid var(--gold); outline-offset: 3px; overflow: visible; }
   .art.st3::after { content: ''; position: absolute; inset: -10px; z-index: -1; border-radius: 50%;
@@ -735,7 +739,12 @@ function beast(id, mon) {
 }
 // 絵。古い絵があればそれ、なければ名前を書で。交配の子は両親の絵を左右に重ねる
 function artHTML(b, cls = '', id = '') {
-  const one = x => (ART[x.id] ? `<img src="${ART[x.id]}" alt="" loading="lazy" onerror="this.remove()">` : '') + `<span class="glyph">${x.k}</span>`;
+  // 絵は URL か、画帖の1ページから切り抜く { u: ページの画像, c: [左, 上, 幅, 高さ](ページに対する割合) }
+  const img = a => typeof a === 'string' ? `<img src="${a}" alt="" loading="lazy" onerror="this.remove()">`
+    : `<span class="crop" style="aspect-ratio:${a.c[2] / a.c[3] / 1.4}"><img src="${a.u}" alt="" loading="lazy" onerror="this.parentNode.remove()"
+        onload="this.parentNode.style.aspectRatio = this.naturalWidth * ${a.c[2]} / (this.naturalHeight * ${a.c[3]})"
+        style="width:${100 / a.c[2]}%;translate:${-a.c[0] * 100}% ${-a.c[1] * 100}%"></span>`;
+  const one = x => (ART[x.id] ? img(ART[x.id]) : '') + `<span class="glyph">${x.k}</span>`;
   const inner = b.a ? `<div class="half l">${one(b.a)}</div><div class="half r">${one(b.b)}</div><span class="glyph hy">${b.k}</span>` : one(b);
   return `<div class="art r${b.r} ${cls}"${id ? ` id="${id}"` : ''}>${inner}<i class="seal">${RC[b.r]}</i></div>`;
 }
