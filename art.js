@@ -1,5 +1,5 @@
 // 魔物の絵。古い本のパブリックドメインの絵を Wikimedia Commons から借りる
-// 主に 古今圖書集成(1726)・山海經 崇禎本・汪紱 山海經存(1895)・三才図会(1609)・怪奇鳥獣図巻・鳥山石燕。ないものは名前の書で描く
+// 主に 古今圖書集成(1726)・山海經 崇禎本・汪紱 山海經存(1895)・三才図会(1609)・海錯圖(1698)・朝鮮古蹟図譜(1915, 高句麗壁画の四神)・怪奇鳥獣図巻・鳥山石燕。ないものは名前の書で描く
 const ART = {
   1: 'https://upload.wikimedia.org/wikipedia/commons/e/ed/Wang_fu%281895%29-shanhaijingcun1-fol6b-xuangui-revolvingtortoise.png',
   2: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Shahaijing-chongzhen%281628%E2%80%931644%29-nanshanjing1-fol8a-lili-powercat.jpg/500px-Shahaijing-chongzhen%281628%E2%80%931644%29-nanshanjing1-fol8a-lili-powercat.jpg',
@@ -30,6 +30,7 @@ const ART = {
   30: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Fujisawa%281922%29-kenkyu-v2-p024-fig11-ryogyo-or-ling_fish%28Shanhaijing%29.jpg/500px-Fujisawa%281922%29-kenkyu-v2-p024-fig11-ryogyo-or-ling_fish%28Shanhaijing%29.jpg',
   31: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic275_-_%E5%A4%A9%E9%A6%AC%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic275_-_%E5%A4%A9%E9%A6%AC%E5%9C%96.png',
   32: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic196_-_%E9%A3%9B%E9%BC%A0%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic196_-_%E9%A3%9B%E9%BC%A0%E5%9C%96.png',
+  33: 'https://upload.wikimedia.org/wikipedia/commons/2/24/%E8%80%B3%E9%BC%A0.jpg',
   34: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic260_-_%E5%AD%9F%E6%A7%90%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic260_-_%E5%AD%9F%E6%A7%90%E5%9C%96.png',
   35: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic416_-_%E9%B0%BC%E9%B0%BC%E9%AD%9A%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic416_-_%E9%B0%BC%E9%B0%BC%E9%AD%9A%E5%9C%96.png',
   36: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic283_-_%E7%8A%B0%E7%8B%B3%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic283_-_%E7%8A%B0%E7%8B%B3%E5%9C%96.png',
@@ -56,6 +57,7 @@ const ART = {
   58: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic250_-_%E5%9C%9F%E8%9E%BB%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic250_-_%E5%9C%9F%E8%9E%BB%E5%9C%96.png',
   59: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic186_-_%E9%A7%AE%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic186_-_%E9%A7%AE%E5%9C%96.png',
   60: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/%E5%AD%9F%E6%A5%B5.jpg/500px-%E5%AD%9F%E6%A5%B5.jpg',
+  62: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/%E6%B5%B7%E9%8C%AF%E5%9C%96_%E7%AC%AC%E4%B8%80%E5%86%8A_%E4%BA%BA%E9%AD%9A.jpg/500px-%E6%B5%B7%E9%8C%AF%E5%9C%96_%E7%AC%AC%E4%B8%80%E5%86%8A_%E4%BA%BA%E9%AD%9A.jpg',
   63: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic113_-_%E7%95%A2%E6%96%B9%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic113_-_%E7%95%A2%E6%96%B9%E5%9C%96.png',
   64: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic130_-_%E7%B2%BE%E8%A1%9B%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic130_-_%E7%B2%BE%E8%A1%9B%E5%9C%96.png',
   65: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/%E8%AB%B8%E6%87%B7.jpg/500px-%E8%AB%B8%E6%87%B7.jpg',
@@ -69,16 +71,24 @@ const ART = {
   73: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic252_-_%E7%8C%99%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic252_-_%E7%8C%99%E5%9C%96.png',
   76: 'https://upload.wikimedia.org/wikipedia/commons/c/cf/Shan_Hai_Jing_Tiangou.jpg',
   77: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic291_-_%E7%95%B6%E5%BA%B7%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic291_-_%E7%95%B6%E5%BA%B7%E5%9C%96.png',
+  79: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic165_-_%E8%B2%94%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic165_-_%E8%B2%94%E5%9C%96.png',
+  81: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Han_Bronze_Door_Knocker_Taotie_Face.jpg/500px-Han_Bronze_Door_Knocker_Taotie_Face.jpg',
   82: 'https://upload.wikimedia.org/wikipedia/commons/f/f6/Shan_Hai_Jing_Qiongji.jpg',
   83: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic324_-_%E6%AA%AE%E6%9D%8C%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic324_-_%E6%AA%AE%E6%9D%8C%E5%9C%96.png',
+  84: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Imperial_Encyclopaedia_-_Spirits_and_the_Supernatural_-_pic19_-_%E5%B8%9D%E6%B1%9F%E7%A5%9E%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Spirits_and_the_Supernatural_-_pic19_-_%E5%B8%9D%E6%B1%9F%E7%A5%9E%E5%9C%96.png',
   85: 'https://upload.wikimedia.org/wikipedia/commons/0/0c/SekienHakutaku.jpg',
   86: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Shahaijing-chongzhen%281628%E2%80%931644%29-nanshanjing1-fol5b-ninetailfox.jpg/500px-Shahaijing-chongzhen%281628%E2%80%931644%29-nanshanjing1-fol5b-ninetailfox.jpg',
   87: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5a/Kaiki-choju_Xiang-liu.jpg/500px-Kaiki-choju_Xiang-liu.jpg',
   88: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Jiang_Yinghao_-_Xingtian.jpg/500px-Jiang_Yinghao_-_Xingtian.jpg',
   89: 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Shan_Hai_Jing_Kui.jpg',
   90: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic154_-_%E7%8D%AC%E8%B1%B8%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Animal_Kingdom_-_pic154_-_%E7%8D%AC%E8%B1%B8%E5%9C%96.png',
+  92: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Imperial_Encyclopaedia_-_Spirits_and_the_Supernatural_-_pic49_-_%E5%A4%A9%E5%90%B3%E7%A5%9E%E5%9C%96.png/500px-Imperial_Encyclopaedia_-_Spirits_and_the_Supernatural_-_pic49_-_%E5%A4%A9%E5%90%B3%E7%A5%9E%E5%9C%96.png',
   93: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/42/Yu_Sheng_-_Fenghuang_-_18th-century.jpg/500px-Yu_Sheng_-_Fenghuang_-_18th-century.jpg',
   94: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Qilin_in_sancai_tuhui.jpg/500px-Qilin_in_sancai_tuhui.jpg',
+  95: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/%EC%B2%AD%EB%A3%A1_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg/500px-%EC%B2%AD%EB%A3%A1_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg',
+  96: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/%EB%B0%B1%ED%98%B8_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg/500px-%EB%B0%B1%ED%98%B8_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg',
+  97: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/%EC%A3%BC%EC%9E%91_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg/500px-%EC%A3%BC%EC%9E%91_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg',
+  98: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/%ED%98%84%EB%AC%B4_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg/500px-%ED%98%84%EB%AC%B4_%EC%A1%B0%EC%84%A0%EA%B3%A0%EC%A0%81%EB%8F%84%EB%B3%B4.jpg',
   99: 'https://upload.wikimedia.org/wikipedia/commons/6/6f/Shan_Hai_Jing_Yinglong.jpg',
   100: 'https://upload.wikimedia.org/wikipedia/commons/f/fe/Shan_hai_jing_Zhuyin.jpg',
 };
