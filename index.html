@@ -449,7 +449,7 @@ const Calc = {
     const pool = BEASTS.filter(b => b.r === k && b.id <= MORNING);
     return pool[Math.floor(r() * pool.length)].id;
   },
-  // 勉強の卵から生まれる霊獣。165種ぜんぶから。半分は勉強でしか会えない霊獣のなかから
+  // 勉強の卵から生まれる霊獣。164種ぜんぶから。半分は勉強でしか会えない霊獣のなかから
   egg(seed) {
     const r = rng(seed), ws = RARITY.map(x => x.w);
     let x = r() * ws.reduce((a, b) => a + b), k = 0;
