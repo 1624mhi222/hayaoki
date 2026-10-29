@@ -239,6 +239,8 @@
     box-shadow: 0 0 0 1px var(--gold), 0 0 26px rgba(201,162,74,.35); animation: aura 3s ease-in-out infinite; }
   .art.egg .glyph { color: var(--gold); writing-mode: horizontal-tb; font-size: 40px; }
   .pet .info .bar { margin-top: 8px; }
+  .art.small { --s: 64px; } .art.egg.small { width: 54px; height: 64px; } .art.egg.small .glyph { font-size: 24px; }
+  .art.small .seal { display: none; }
   .dexbtn { font-size: 14px; font-weight: 600; color: var(--gold); padding: 9px;
     background: linear-gradient(90deg, #1d150d, #2a1d11, #1d150d); box-shadow: inset 0 0 0 1px #6b5532; }
   .dexbtn b { color: var(--ink); }
@@ -397,9 +399,18 @@ const Calc = {
   },
   // 使い始めた日から今日までを順に見て、経験値と連続記録を数える
   // 大成功で連続+1(7日ごとにボーナス)、二度寝で連続は0。寝坊したらひよこは死んで、お墓に入り、たまごからやり直し
-  stats(log, s, now) {
+  // 霊獣は1体。早起き・日課・TODO・勉強の経験値がぜんぶこの1体に入る
+  // 早起き 大成功+20 二度寝+5 寝坊は相棒の★が1つ減って経験値0 / 日課+5 サボり-5 / TODO+8 期限切れ1日-3 / 勉強5分で+1
+  // 勉強は週の目標に届いたら特別召喚と+30、届かなかったら-40
+  stats(log, s, now, x = {}) {
     const today = this.ymd(now);
     let xp = 0, streak = 0, best = 0, perfect = 0, days = 0, bonus = 0;
+    const habits = x.habits || [], hlog = x.hlog || {}, todos = (x.todos || []).filter(t => !isSug(t)), study = x.study || [];
+    const doneDay = t => t.done ? this.ymd(new Date(t.done)) : null;
+    const sMin = {}, sWeek = {};
+    study.forEach(e => { const d = this.ymd(new Date(e.at)); sMin[d] = (sMin[d] || 0) + e.min; const w = this.week(new Date(e.at)); sWeek[w] = (sWeek[w] || 0) + e.min; });
+    const ss = s.study || {}, weeks = [];
+    const day = { task: 0, study: 0, pen: 0 };   // 今日のぶん(画面に出す)
     const graves = [];
     // 魔物: 大成功の朝に1体召喚。7日連続のボーナスでは珍獣以上をもう1体。同じ魔物は重なって★が上がる
     // 寝坊すると相棒が逃げる(★が1つ減り、0になったらいなくなる)
@@ -414,6 +425,27 @@ const Calc = {
       .map(p => ({ t: new Date(p.end.t).toISOString(), id: p.sp, n: p.n || 1, hyb: p.hyb, imp: p.imp, a0: 'grad' }));
     const acts = [...(s.picks || []).map(x => ({ ...x, a0: 'pick' })), ...(s.breeds || []).map(x => ({ ...x, a0: 'breed' })), ...grads].sort((a, b) => a.t < b.t ? -1 : 1);
     for (let d = s.start; d <= today; d = this.addDays(d, 1)) {
+      // 日課・TODO・勉強
+      let task = 0, pen = 0;
+      habits.forEach(h => {
+        if (!this.isDue(h, d) || (h.since && h.since > d)) return;
+        if ((hlog[d] || []).includes(h.id)) task += 5; else if (d < today) pen += 5;
+      });
+      todos.forEach(t => {
+        if (doneDay(t) === d) task += 8;
+        if (t.due && t.due < d && (!t.done || doneDay(t) >= d)) pen += 3;
+      });
+      const smin = sMin[d] || 0, sxp = Math.floor(smin / 5);
+      xp = Math.max(0, xp + task + sxp - pen);
+      if (d === today) Object.assign(day, { task, study: sxp, pen });
+      // 日曜で週がしめくくられたら、勉強の目標を見る
+      if (this.parse(d).getDay() === 0 && d < today) {
+        const w = this.week(this.parse(d)), g = this.goalFor(ss, w), m = sWeek[w] || 0;
+        if (w >= s.start && g > 0) {   // 途中から始めた週は数えない
+          weeks.push({ w, m, g, ok: m >= g });
+          if (m >= g) { xp += 30; get(this.egg(seed + '|w' + w), 'study'); } else xp = Math.max(0, xp - 40);
+        }
+      }
       const j = this.judge(this.plan(d, s), log[d], now, s);
       if (j.result) {
         days++; xp += j.xp;
@@ -443,7 +475,7 @@ const Calc = {
       });
     }
     const mon = { own, seen, events, partner, hybrids };
-    return { xp, streak, best, perfect, days, bonus, graves, mon, gen: graves.length + 1, toBonus: BONUS - streak % BONUS, ...this.level(xp) };
+    return { xp, streak, best, perfect, days, bonus, graves, mon, day, weeks, gen: graves.length + 1, toBonus: BONUS - streak % BONUS, ...this.level(xp) };
   },
   // 珍しさを重みで決めてから、その珍しさの魔物を1体。minR より下は出ない
   summon(seed, minR = 0) {
@@ -895,26 +927,30 @@ function settingsCard() {
       <label>合言葉</label><input type="text" id="apikey" value="${esc(Sync.conf ? Sync.conf.key : '')}" autocomplete="off"></div>
     <button class="btn main" data-act="api">${Sync.conf ? 'つなぎ直す' : 'つなぐ'}</button>
     ${Sync.conf ? '<button class="linkbtn" data-act="apioff" style="color:var(--quiet)">連携をやめる（記録はこの端末に残ります）</button>' : ''}
-    <button class="linkbtn" data-act="reset">きろくを全部消す</button>
+    <button class="linkbtn" data-act="reset">記録をリセットして明日から始める</button>
   </details></section>`;
 }
 
 // ---- TODO・日課 ----
-function gardenCard(g, t) {
-  const today = Calc.ymd(t), wd = t.getDay();
+// 相棒(霊獣)の小さな表示。どのタブでも同じ1体を育てている
+function miniPet(st, fid) {
+  const m = st.mon, b = m.partner && beast(m.partner, m), k = stageOf(st.lv);
+  const face = b ? artHTML(b, 'st' + k + ' small', fid) : `<div class="art egg small" id="${fid}"><span class="glyph">封</span></div>`;
+  return `<div class="pet">${face}<div class="info"><div class="name">${b ? esc(stageName(b, k)) : '封ぜられし卵'} <span class="label">Lv.${st.lv}</span></div>
+    <div class="bar"><div style="width:${Math.round(st.into / st.need * 100)}%"></div></div><div class="label">次のLvまで ${st.need - st.into} XP</div></div></div>`;
+}
+function gardenCard(st, t) {
+  const today = Calc.ymd(t);
   const due = S.habits.filter(h => Calc.isDue(h, today)), did = due.filter(h => (S.hlog[today] || []).includes(h.id));
   const left = S.todos.filter(x => !x.done && !isSug(x)).length;
   const overdue = S.todos.filter(x => !x.done && !isSug(x) && x.due && x.due < today).length;
-  return `<section class="card"><div class="pet">
-    <div class="face plant ${g.wilted ? 'wilt' : ''}" id="face2">${g.wilted ? '枯' : g.stage.face}</div>
-    <div class="info"><div class="title">霊木</div><div class="name">${g.wilted ? '枯れかけた' : ''}${g.stage.name} <span class="label">Lv.${g.lv}</span></div>
-      <div class="bar green"><div style="width:${Math.round(g.into / g.need * 100)}%"></div></div>
-      <div class="label">次のレベルまで ${g.need - g.into} XP${g.next ? ` ・ Lv.${g.next.lv}で${g.next.face}に` : ''}</div></div></div>
+  const dy = st.day;
+  return `<section class="card">${miniPet(st, 'face2')}
     <div class="stats">
       <div class="stat"><span class="label">今日の日課</span><b>${did.length}<span class="label">/${due.length}</span></b></div>
       <div class="stat"><span class="label">のこりTODO</span><b>${left}</b></div>
-      <div class="stat"><span class="label">サボりの罰</span><b>${g.penalty ? '−' + g.penalty : 0}<span class="label"> XP</span></b></div>
-    </div>${g.wilted ? `<div class="note warnline">${g.missedY ? `昨日の日課を${g.missedY}つサボったので` : ''}${g.missedY && overdue ? '、' : ''}${overdue ? `期限切れのTODOが${overdue}つあるので` : ''}しおれています。期限切れは1日ごとに−3XP</div>` : ''}
+      <div class="stat"><span class="label">今日の経験値</span><b>${dy.task - dy.pen >= 0 ? '+' : '−'}${Math.abs(dy.task - dy.pen)}</b></div>
+    </div>${overdue ? `<div class="note warnline">期限切れのTODOが${overdue}つ。1日ごとに相棒の経験値が −3</div>` : ''}
     <p class="note">日課 +5 ・ TODO +8 ・ 日課をサボると −5 ・ 期限切れTODOは1日 −3</p></section>`;
 }
 function habitsCard(t) {
@@ -994,7 +1030,7 @@ function recapView(r) {
 }
 // ---- 勉強 ----
 const PSTAGES = ['卵', '幼獣', '若獣', '成獣', '神獣'];
-const MOOD = { happy: ['上機嫌', 'good'], genki: ['元気', 'good'], normal: ['平静', ''], weak: ['衰弱', 'warn'], dying: ['瀕死', 'bad'] };
+const MOOD = { happy: ['達成', 'good'], genki: ['順調', 'good'], normal: ['ふつう', ''], weak: ['遅れ気味', 'warn'], dying: ['かなり遅れ', 'bad'] };
 const fmtMin = m => { m = Math.round(m); const h = Math.floor(m / 60), r = m % 60; return h ? (r ? `${h}時間${r}分` : `${h}時間`) : `${r}分`; };
 const md = ymd => `${Number(ymd.slice(5, 7))}/${Number(ymd.slice(8))}`;
 const subjOf = id => S.settings.study.subjects.find(x => x.id === id) || { id, name: '消した教科', color: '#7a6a55' };
@@ -1002,6 +1038,15 @@ const petBeast = p => p.hyb ? beast(p.sp, { hybrids: { [p.sp]: p.hyb } }) : BEAS
 const clockText = () => { const tm = S.settings.study.timer; if (!tm) return '00:00:00'; const x = Math.max(0, Math.floor((now() - tm.at) / 1000));
   return Calc.pad(Math.floor(x / 3600)) + ':' + Calc.pad(Math.floor(x / 60) % 60) + ':' + Calc.pad(x % 60); };
 
+function studyGoalCard(z, st) {
+  const [ml, mc] = MOOD[z.mood];
+  const status = z.pr >= 1 ? '今週の目標は達成。日曜の夜に特別召喚が来る' : `あと ${fmtMin(z.remain)}。残り${z.daysLeft}日なので1日あたり約${fmtMin(z.perDay)}`;
+  return `<section class="card">${miniPet(st, 'face3')}
+    <div class="wk"><span><b>${fmtMin(z.total)}</b> <span class="label">／ 今週の目標 ${fmtMin(z.goal)}</span></span><span class="pill ${mc}">${ml}</span></div>
+    <div class="bar pace ${mc}"><div style="width:${Math.min(100, z.pr * 100)}%"></div><i style="left:${z.elapsed * 100}%"></i></div>
+    <div class="label">${status}</div>
+    <p class="note">勉強5分で相棒に +1 XP。週の目標に届くと、勉強でしか会えない魔物も出る特別召喚と +30。届かないと −40。</p></section>`;
+}
 function studyPetCard(z) {
   const ss = S.settings.study, p = z.pet, [ml, mc] = MOOD[z.mood];
   const eggForm = (label, kind) => `<form class="add" data-form="${kind}"><input type="text" name="name" placeholder="新しい子の名前" maxlength="12" autocomplete="off"><button class="btn main">${label}</button></form>
@@ -1076,10 +1121,9 @@ function entriesCard(z) {
 }
 function studySettings(z) {
   const ss = S.settings.study;
-  const graves = [...(ss.graves || []), ...ss.pets.filter(p => !p.imp && p.end && p.end.k === 'gone').map(p => ({ name: p.name, born: Calc.week(new Date(p.t)), died: p.end.w }))];
   return `<section class="card"><details${S.sOpen ? ' open' : ''} data-s-open><summary>勉強の設定・これまで</summary>
     <div class="grid"><label>週の目標（時間）</label><input type="number" min="0.5" max="100" step="0.5" data-sk="goal" value="${z.goal / 60}">
-      ${z.died ? '' : `<label>霊獣の名前</label><input type="text" maxlength="12" data-sk="name" value="${esc(z.pet.name)}">`}</div>
+</div>
     <h2 style="margin-top:18px">教科</h2>
     ${ss.subjects.map(x => `<div class="item"><div class="what"><span class="chip"><i style="background:${x.color}"></i>${esc(x.name)}</span>
       <span class="sw">${SCOLORS.map(c => `<button style="background:${c}" class="${c === x.color ? 'on' : ''}" data-s="color" data-id="${x.id}" data-c="${c}" aria-label="色を変える"></button>`).join('')}</span></div>
@@ -1087,7 +1131,6 @@ function studySettings(z) {
     <form class="add" data-form="subj"><input type="text" name="name" placeholder="例：物理、世界史、TOEIC" maxlength="16" autocomplete="off"><button class="btn main">教科を追加</button></form>
     <h2 style="margin-top:18px">これまでの週</h2>
     ${z.hist.slice(0, 12).map(h => `<div class="item"><div class="what">${md(h.w)}〜${md(Calc.addDays(h.w, 6))}</div><span class="label">${fmtMin(h.m)} / ${fmtMin(h.g)}</span><span class="due ${h.ok ? 'ok' : 'over'}">${h.ok ? '達成' : '未達'}</span></div>`).join('') || '<div class="empty">最初の週が終わると、ここに結果が残ります</div>'}
-    ${graves.length ? `<h2 style="margin-top:18px">お墓</h2>${graves.map(g => `<div class="item"><div class="what">${esc(g.name)}<small>${g.born ? md(g.born) + '生まれ' : ''}${g.died ? ' ・ ' + md(g.died) + 'の週に天に還った' : ''}</small></div></div>`).join('')}` : ''}
     <h2 style="margin-top:18px">山海勉強録から引っ越す</h2>
     <p class="note">山海勉強録の設定にある「データを書き出す」で保存したファイルを選ぶか、中身を貼りつけてください。勉強の記録・教科・目標・今の霊獣が引っ越してきて、広場の霊獣は図鑑の仲間になります。今の勉強の霊獣は上書きされます。</p>
     <form class="add" data-form="import"><input type="file" name="file" accept=".json,application/json"><textarea name="text" rows="3" placeholder="ここに貼りつけてもOK"></textarea><button class="btn main">読みこむ</button></form>
@@ -1108,10 +1151,10 @@ function render() {
   // 曜日をえらんだりチェックしたりしても、書きかけの入力は消さない
   const keep = [...document.querySelectorAll('form[data-form] input:not([type=file]), form[data-form] textarea, form[data-form] select')].map(i => [i.form.dataset.form, i.name, i.value]);
   const focused = document.activeElement && document.activeElement.form && document.activeElement.name ? [document.activeElement.form.dataset.form, document.activeElement.name] : null;
-  const st = Calc.stats(S.log, S.settings, t);
+  const st = Calc.stats(S.log, S.settings, t, S);
   const wake = () => petCard(st) + todayCard(t) + weeksCard(t) + settingsCard();
-  const habits = () => gardenCard(Calc.garden(S, Calc.ymd(t)), t) + habitsCard(t);
-  const study = () => { const z = Calc.study(S.study, S.settings.study, t); return studyPetCard(z) + timerCard(t) + studyChart(z, t) + entriesCard(z) + studySettings(z); };
+  const habits = () => gardenCard(st, t) + habitsCard(t);
+  const study = () => { const z = Calc.study(S.study, S.settings.study, t); return studyGoalCard(z, st) + timerCard(t) + studyChart(z, t) + entriesCard(z) + studySettings(z); };
   if (WIDE.matches) $('#app').innerHTML = `<div class="cols"><div>${wake()}</div><div>${habits()}</div><div>${todosCard(t)}</div><div>${study()}</div></div>` + tabsBar();
   else $('#app').innerHTML = (S.tab === 'tasks' ? habits() + todosCard(t) : S.tab === 'study' ? study() : wake()) + tabsBar();
   const rc = recapItems(t);
@@ -1157,7 +1200,7 @@ document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const t = now(), d = Calc.ymd(t), act = b.dataset.act;
   if (act === 'c1' || act === 'c2') {
-    const before = Calc.stats(S.log, S.settings, t);
+    const before = Calc.stats(S.log, S.settings, t, S);
     S.log[d] = Object.assign({}, S.log[d], { [act]: t.toISOString() });
     saveLog();
     if (act === 'c1') {
@@ -1165,7 +1208,7 @@ document.addEventListener('click', e => {
       armSecond(S.settings.gap * MIN);
     }
     render();
-    const after = Calc.stats(S.log, S.settings, t);
+    const after = Calc.stats(S.log, S.settings, t, S);
     if (act === 'c2') pop(after.lv > before.lv ? `覚醒 Lv.${after.lv}` : `+${after.xp - before.xp} XP`);
     else pop('目覚めよ');
   } else if (act === 'ics') {
@@ -1183,7 +1226,12 @@ document.addEventListener('click', e => {
   } else if (act === 'apioff') {
     if (confirm('スプレッドシート連携をやめますか？')) { Sync.conf = null; store.set('ha-api', null); Sync.status = ''; render(); }
   } else if (act === 'reset') {
-    if (confirm('きろくと経験値、集めた魔物を全部消します。よいですか？')) { store.set('ha-shown', 0); S.settings.picks = []; S.settings.breeds = []; S.log = {}; S.settings.start = d; saveLog(); saveSettings(); render(); }
+    // タスク・日課・勉強の記録は残し、相棒・図鑑・連続記録・経験値だけを明日から数え直す
+    if (confirm('連続記録・経験値・相棒・図鑑をリセットして、明日から始めます。TODO・日課・勉強の記録は消えません。よいですか？')) {
+      store.set('ha-shown', 0); S.settings.picks = []; S.settings.breeds = []; S.settings.start = Calc.addDays(d, 1); S.settings.seed = uid();
+      if (S.settings.study) { S.settings.study.pets = []; delete S.settings.study.nextEgg; }
+      saveSettings(); render();
+    }
   }
 });
 
@@ -1221,7 +1269,7 @@ document.addEventListener('change', e => {
 // TODO・日課の操作
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-t]'); if (!b) return;
-  const t = now(), d = Calc.ymd(t), id = b.dataset.id, before = Calc.garden(S, Calc.ymd(t));
+  const t = now(), d = Calc.ymd(t), id = b.dataset.id, before = Calc.stats(S.log, S.settings, t, S);
   switch (b.dataset.t) {
     case 'tab': S.tab = b.dataset.v; store.set('ha-tab', S.tab); window.scrollTo(0, 0); break;
     case 'showdone': S.showDone = !S.showDone; break;
@@ -1248,8 +1296,8 @@ document.addEventListener('click', e => {
     default: return;
   }
   saveTasks(); render();
-  const after = Calc.garden(S, Calc.ymd(t));
-  if (after.xp > before.xp) pop(after.lv > before.lv ? `レベルアップ！ Lv.${after.lv}` : `+${after.xp - before.xp} XP`, '#face2');
+  const after = Calc.stats(S.log, S.settings, t, S);
+  if (after.xp > before.xp) pop(after.lv > before.lv ? `覚醒 Lv.${after.lv}` : `+${after.xp - before.xp} XP`, '#face2');
 });
 document.addEventListener('submit', e => {
   const f = e.target; e.preventDefault();
@@ -1298,13 +1346,11 @@ document.addEventListener('submit', e => {
 
 // 勉強の操作
 function addStudy(sid, min, at) {
-  const t = now(), before = Calc.study(S.study, S.settings.study, t);
+  const t = now(), before = Calc.stats(S.log, S.settings, t, S);
   S.study.push({ id: uid(), s: sid, min, at });
   S.lastSubj = sid; save(); render();
-  const after = Calc.study(S.study, S.settings.study, t);
-  const b = after.pet && petBeast(after.pet);
-  if (!after.died && after.stage > before.stage) pop(before.stage === 0 ? `孵化 ・ ${b.k}` : PSTAGES[after.stage] + 'へ', '#face3');
-  else pop(`${subjOf(sid).name} +${fmtMin(min)}`, '#face3');
+  const after = Calc.stats(S.log, S.settings, t, S);
+  pop(after.lv > before.lv ? `覚醒 Lv.${after.lv}` : `${subjOf(sid).name} +${fmtMin(min)}${after.xp > before.xp ? ` ・ +${after.xp - before.xp} XP` : ''}`, '#face3');
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-s]'); if (!b) return;
