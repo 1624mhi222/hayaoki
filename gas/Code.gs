@@ -3,7 +3,7 @@
 // 合言葉は「プロジェクトの設定 → スクリプト プロパティ」に KEY という名前で入れる。
 
 const SHEET = 'data';
-const KINDS = ['settings', 'log', 'hlog', 'habits', 'todos', 'dead'];
+const KINDS = ['settings', 'log', 'hlog', 'habits', 'todos', 'study', 'dead'];
 
 function doPost(e) {
   let out;
@@ -47,6 +47,7 @@ function summary_(kind, v) {
   if (kind === 'habits') return v.name || '';
   if (kind === 'log') return ['c1', 'c2', 'c3'].map(k => v[k] ? k + ' ' + Utilities.formatDate(new Date(v[k]), Session.getScriptTimeZone(), 'HH:mm') : '').filter(String).join(' / ');
   if (kind === 'hlog') return (v.ids || []).length + '件';
+  if (kind === 'study') return (v.at ? Utilities.formatDate(new Date(v.at), Session.getScriptTimeZone(), 'M/d HH:mm') + ' ' : '') + (v.min || 0) + '分';
   return '';
 }
 function write_(doc) {
