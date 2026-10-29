@@ -20,7 +20,7 @@ DUE = re.compile(r'(?:📅\s*|due::?\s*)(\d{4}-\d{2}-\d{2})')
 SKIP_DIRS = {'.obsidian', '.trash', '.git'}
 # TODOっぽい言い方。- [ ] のチェックボックスも提案に入れる
 LIKE = re.compile(r'TODO|やる|やらな|しなきゃ|しないと|忘れずに|忘れない|締め?切|しめきり|〆切|提出|までに|連絡する|予約|申し?込|買う|払う|返す|返信')
-SUGGEST_SKIP = ('99 Templates', 'wiki')
+SUGGEST_SKIP = ('99 Templates', 'wiki', 'log.md', 'index.md')
 SUGGEST_MAX = 15
 
 
