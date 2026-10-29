@@ -149,6 +149,8 @@
   .graves { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px; font-size: 13px; padding-top: 10px; border-top: 1px dashed var(--line); }
   .pet .face.wilt { background: var(--bad-soft); filter: saturate(.6); }
   .warnline { color: var(--bad); }
+  .recap { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.55); display: grid; place-items: center; padding: 16px; overflow: auto; }
+  .recap .card { width: 100%; max-width: 440px; margin: 0; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
 
   /* ---- 厨二の装い ---- */
   body.lock { overflow: hidden; }
@@ -871,6 +873,22 @@ function todosCard(t) {
     ${done.length ? `<button class="linkbtn" style="color:var(--quiet)" data-t="showdone">${S.showDone ? '完了したものを隠す' : `完了したもの（${done.length}）`}</button>${S.showDone ? done.slice(0, 30).map(row).join('') : ''}` : ''}
   </section>`;
 }
+// 前の日にできなかった日課と、期限が前の日だったTODO。朝5時すぎに開いたら出して、あとからチェックできるようにする
+function recapItems(t) {
+  const today = Calc.ymd(t), y = Calc.addDays(today, -1);
+  if (t.getHours() < 5 || store.get('ha-recap', '') === today) return null;
+  const habits = S.habits.filter(h => Calc.isDue(h, y) && (!h.since || h.since <= y) && !(S.hlog[y] || []).includes(h.id));
+  const todos = S.todos.filter(x => !x.done && !isSug(x) && x.due === y);
+  return habits.length || todos.length ? { y, habits, todos } : null;
+}
+function recapView(r) {
+  const row = (id, name, kind, sub) => `<div class="item"><div class="what">${esc(name)}<small>${sub}</small></div>
+    <button class="btn main sm" data-t="${kind}" data-id="${id}" data-y="${r.y}">やった</button></div>`;
+  return `<div class="recap"><section class="card"><h2>昨日（${Number(r.y.slice(5, 7))}/${Number(r.y.slice(8))}）のやり残し</h2>
+    <p class="note">昨日やったのにチェックし忘れたものは「やった」を押してね。サボりの減点が消えます</p>
+    ${r.habits.map(h => row(h.id, h.name, 'rhab', '日課')).join('')}${r.todos.map(x => row(x.id, x.text, 'rtodo', 'TODO・昨日まで')).join('')}
+    <button class="btn" data-t="rclose">残りはやってない（閉じる）</button></section></div>`;
+}
 function tabsBar() {
   return `${Sync.conf ? `<div class="status" id="syncstatus">${esc(Sync.status)}</div>` : ''}<nav class="tabs"><button class="${S.tab === 'wake' ? 'on' : ''}" data-t="tab" data-v="wake"><b>暁</b> 早起き</button>
     <button class="${S.tab === 'tasks' ? 'on' : ''}" data-t="tab" data-v="tasks"><b>修</b> TODO・日課</button></nav>`;
@@ -890,7 +908,8 @@ function render() {
   const habits = () => gardenCard(Calc.garden(S, Calc.ymd(t)), t) + habitsCard(t);
   if (WIDE.matches) $('#app').innerHTML = `<div class="cols"><div>${wake()}</div><div>${habits()}</div><div>${todosCard(t)}</div></div>` + tabsBar();
   else $('#app').innerHTML = (S.tab === 'tasks' ? habits() + todosCard(t) : wake()) + tabsBar();
-  const ovs = (S.dex ? dexView(st) : '') + revealView(st);
+  const rc = recapItems(t);
+  const ovs = (S.dex ? dexView(st) : '') + revealView(st) + (rc ? recapView(rc) : '');
   if (ovs) $('#app').insertAdjacentHTML('beforeend', ovs);
   document.body.classList.toggle('lock', !!ovs);
   keep.forEach(([f, n, v]) => { const i = $(`[data-form=${f}] [name=${n}]`); if (i) i.value = v; });
@@ -1016,6 +1035,9 @@ document.addEventListener('click', e => {
     case 'hdel': { const h = S.habits.find(x => x.id === id); if (h && confirm(`「${h.name}」を消しますか？（もらった経験値はそのまま）`)) { S.habits = S.habits.filter(x => x.id !== id); S.editing = null; } break; }
     case 'tcheck': { const x = S.todos.find(x => x.id === id); if (x) x.done = x.done ? null : t.toISOString(); break; }
     case 'tdel': S.todos = S.todos.filter(x => x.id !== id); break;
+    case 'rhab': S.hlog[b.dataset.y] = [...(S.hlog[b.dataset.y] || []), id]; break;
+    case 'rtodo': { const x = S.todos.find(x => x.id === id); if (x) x.done = new Date(Calc.parse(b.dataset.y).setHours(23)).toISOString(); break; }   // 昨日のうちに終わったことにする
+    case 'rclose': store.set('ha-recap', d); render(); return;
     case 'saccept': { const x = S.todos.find(x => x.id === id); if (x) x.accepted = true; break; }
     default: return;
   }
