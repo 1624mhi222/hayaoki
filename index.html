@@ -133,6 +133,9 @@
   .empty { color: var(--quiet); font-size: 14px; padding: 6px 0; }
   .sugs { background: var(--accent-soft); border-radius: 12px; padding: 8px 10px; margin-bottom: 10px; }
   .sugs h2 { margin: 0; font-size: 14px; }
+  .sugs .pull { all: unset; cursor: pointer; display: flex; width: 100%; justify-content: space-between; align-items: center; }
+  .sugs .pull .tab { font-size: 12px; color: var(--quiet); margin-left: 6px; }
+  .sugs.shut { padding-bottom: 8px; }
   .sugs .item { border-top-color: rgba(0,0,0,.06); }
   .btn.sm { width: auto; margin: 0; padding: 6px 12px; font-size: 13px; }
   /* PC: 早起き・日課・TODOを3列に並べ、タブは出さない */
@@ -317,7 +320,7 @@ const S = {
   habits: store.get('ha-habits', []),     // { id, name, days: [曜日の数字] }
   hlog: store.get('ha-hlog', {}),         // { 'YYYY-MM-DD': [日課のid] }
   todos: store.get('ha-todos', []),       // { id, text, due, done }
-  edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false, bulk: false, newEvery: false, editing: null, ed: { every: 0, days: [] },
+  edit: false, newDays: [0, 1, 2, 3, 4, 5, 6], showDone: false, sugOpen: store.get('ha-sugopen', true), bulk: false, newEvery: false, editing: null, ed: { every: 0, days: [] },
 };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 // 前は「授業の時間 − 何分前」で起床時間を決めていた。曜日ごとの起床時間(wake)に置きかえる
@@ -598,8 +601,8 @@ function todosCard(t) {
     <div class="what" data-t="open" data-id="${x.id}">${esc(x.text)}${x.done ? '' : dueTag(x)}</div>
     <button class="del" data-t="tdel" data-id="${x.id}" aria-label="消す">✕</button></div>`;
   const note = x => x.src.slice(3).split('::')[0].split('/').pop().replace(/\.md$/, '');
-  const sugCard = sugs.length ? `<div class="sugs"><div class="head"><h2>💡 Obsidianからの提案</h2><span class="label">${sugs.length}件</span></div>
-    ${sugs.map(x => `<div class="item"><div class="what">${esc(x.text)}${dueTag(x)}<small>${esc(note(x))}</small></div>
+  const sugCard = sugs.length ? `<div class="sugs${S.sugOpen ? '' : ' shut'}"><button class="pull" data-t="sugtoggle" aria-expanded="${S.sugOpen}"><h2>💡 Obsidianからの提案</h2><span class="label">${sugs.length}件<span class="tab">${S.sugOpen ? '▲ 閉じる' : '▼ 開く'}</span></span></button>
+    ${!S.sugOpen ? '' : sugs.map(x => `<div class="item"><div class="what">${esc(x.text)}${dueTag(x)}<small>${esc(note(x))}</small></div>
       <button class="btn main sm" data-t="saccept" data-id="${x.id}">追加</button><button class="del" data-t="tdel" data-id="${x.id}" aria-label="いらない">✕</button></div>`).join('')}</div>` : '';
   return `<section class="card"><h2>TODO</h2>${sugCard}${open.map(row).join('') || '<div class="empty">やることはぜんぶ終わり 🎉</div>'}
     <form class="add" data-form="todo">${S.bulk
@@ -712,6 +715,7 @@ document.addEventListener('click', e => {
   switch (b.dataset.t) {
     case 'tab': S.tab = b.dataset.v; store.set('ha-tab', S.tab); window.scrollTo(0, 0); break;
     case 'showdone': S.showDone = !S.showDone; break;
+    case 'sugtoggle': S.sugOpen = !S.sugOpen; store.set('ha-sugopen', S.sugOpen); render(); return;
     case 'bulk': S.bulk = !S.bulk; break;
     case 'mode': S.newEvery = b.dataset.v === '1'; break;
     case 'open': {
