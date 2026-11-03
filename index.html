@@ -1092,18 +1092,18 @@ function studyPetCard(z) {
 }
 function timerCard(t) {
   const ss = S.settings.study, tm = ss.timer, today = Calc.ymd(t), none = !ss.subjects.length;
-  const opts = sel => ss.subjects.map(x => `<option value="${x.id}" ${x.id === sel ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+  const opts = sel => (none ? '<option value="" selected disabled>教科を選ぶ</option>' : '') + ss.subjects.map(x => `<option value="${x.id}" ${x.id === sel ? 'selected' : ''}>${esc(x.name)}</option>`).join('') + '<option value="__new">＋ 教科を追加…</option>';
   return `<section class="card"><div class="head"><h2>勉強タイマー</h2>${tm ? `<span class="label">計測中 ・ ${esc(subjOf(tm.s).name)}</span>` : ''}</div>
     <div class="clock ${tm ? 'on' : ''}" data-clock>${clockText()}</div>
     ${tm ? `<button class="big study" data-s="stop">記 録<small>終わって記録する</small></button><button class="linkbtn" style="color:var(--quiet)" data-s="cancel">取り消す</button>`
-      : `<form class="add" data-form="start"><select name="s" ${none ? 'disabled' : ''}>${opts(S.lastSubj)}</select><button class="btn main" ${none ? 'disabled' : ''}>スタート</button></form>`}
+      : `<form class="add" data-form="start"><select name="s">${opts(S.lastSubj)}</select><button class="btn main" ${none ? 'disabled' : ''}>スタート</button></form>`}
     <h2 style="margin-top:16px">あとから手で追加</h2>
-    <form class="add" data-form="manual"><select name="s" ${none ? 'disabled' : ''}>${opts(S.lastSubj)}</select>
+    <form class="add" data-form="manual"><select name="s">${opts(S.lastSubj)}</select>
       <input type="date" name="d" min="${Calc.week(t)}" max="${today}" value="${today}" aria-label="日付">
       <input type="number" name="h" min="0" max="23" value="0" inputmode="numeric" aria-label="時間" class="hm"><span class="label">時間</span>
       <input type="number" name="m" min="0" max="59" step="5" value="30" inputmode="numeric" aria-label="分" class="hm"><span class="label">分</span>
       <button class="btn main">追加</button></form>
-    ${none ? '<p class="note">下の設定で教科を足すと記録できます</p>' : ''}</section>`;
+    <button class="linkbtn" data-s="snew">＋ 教科を追加</button></section>`;
 }
 function studyChart(z, t) {
   const ss = S.settings.study, cur = z.cur;
@@ -1383,6 +1383,7 @@ document.addEventListener('click', e => {
     case 'sdel': { const x = ss.subjects.find(x => x.id === id); if (!x || !confirm(`教科「${x.name}」を消しますか？（記録は残ります）`)) return;
       ss.subjects = ss.subjects.filter(x => x.id !== id); break; }
     case 'color': { const x = ss.subjects.find(x => x.id === id); if (x) x.color = b.dataset.c; break; }
+    case 'snew': newSubject(); return;
     default: return;
   }
   save(); render();
@@ -1395,6 +1396,21 @@ document.addEventListener('change', e => {
   if (k === 'name') { const v = el.value.trim(); const z = Calc.study(S.study, ss, t); if (!v || !z.pet) return; z.pet.name = v; }
   save(); render();
 });
+// 教科をその場で足す。足した教科をそのまま選んだ状態にする
+function newSubject() {
+  const ss = S.settings.study, name = (prompt('足す教科の名前（例：物理、世界史、TOEIC）') || '').trim().slice(0, 16);
+  if (name) {
+    const have = ss.subjects.find(x => x.name === name);
+    if (have) S.lastSubj = have.id;
+    else { const x = { id: 's' + uid(), name, color: SCOLORS[ss.subjects.length % SCOLORS.length] }; ss.subjects.push(x); S.lastSubj = x.id; }
+    save();
+  }
+  render();
+  // 書きかけの入力を戻す処理で「＋ 教科を追加…」が選ばれたままにならないように
+  const v = ss.subjects.some(x => x.id === S.lastSubj) ? S.lastSubj : (ss.subjects[0] || {}).id || '';
+  document.querySelectorAll('select[name=s]').forEach(x => { x.value = v; });
+}
+document.addEventListener('change', e => { if (e.target.matches('select[name=s]') && e.target.value === '__new') newSubject(); });
 document.addEventListener('submit', async e => {
   const f = e.target, ss = S.settings.study, t = now();
   e.preventDefault();
