@@ -349,6 +349,8 @@
 const MIN = 60000;
 const WIN = 20;   // 2回目のチェックインを押せる長さ(分)
 const XP = { perfect: 20, half: -30, over: -150 };   // 二度寝・寝坊は大きく減る
+// 目覚ましの記録は from の日から数え直す(2026-11-03 mioの希望でリセット)。ok の日は完全覚醒として扱う
+const WAKE = { from: '2026-11-03', ok: ['2026-11-03'] };
 const BONUS = 7, BONUS_XP = 30;   // 7日続くごとにボーナス
 const RESULT = {
   perfect: '完全覚醒 ― 二度寝の誘惑を断ち切った',
@@ -383,7 +385,7 @@ const Calc = {
   addDays(ymd, k) { const d = this.parse(ymd); d.setDate(d.getDate() + k); return this.ymd(d); },
   // その日の目標起床と、「起きた！」を押せるようになる時刻。目標がない日は null
   plan(ymd, s) {
-    const t = s.wake[this.parse(ymd).getDay()];
+    const t = s.wake[this.parse(ymd).getDay()] || (WAKE.ok.includes(ymd) ? '07:00' : '');
     if (!t) return null;
     const [h, m] = t.split(':').map(Number);
     const target = this.parse(ymd); target.setHours(h, m, 0, 0);
@@ -393,6 +395,7 @@ const Calc = {
   // 流れ: 目標の時間までに「起きた！」(c1) → 15分後に「まだ起きてる！」(c2)
   judge(p, rec, now, s) {
     if (!p) return { phase: 'off' };
+    if (WAKE.ok.includes(this.ymd(p.target))) return { phase: 'done', result: 'perfect', xp: XP.perfect };
     rec = rec || {};
     const c1 = rec.c1 ? new Date(rec.c1) : null, c2 = rec.c2 ? new Date(rec.c2) : null;
     if (!c1 || c1 >= p.close) {
@@ -455,7 +458,7 @@ const Calc = {
           if (m >= g) { xp += 30; get(this.egg(seed + '|w' + w), 'study'); } else xp = Math.max(0, xp - 40);
         }
       }
-      const j = this.judge(this.plan(d, s), log[d], now, s);
+      const j = d < WAKE.from ? {} : this.judge(this.plan(d, s), log[d], now, s);
       if (j.result) {
         days++; xp = Math.max(0, xp + j.xp); if (d === today) day.wake = j.xp;
         if (j.result === 'perfect') {
@@ -925,7 +928,7 @@ function weeksCard(t) {
   for (let k = 0; k < 28; k++) {
     const d = Calc.addDays(first, k), p = Calc.plan(d, S.settings);
     let cls = 'c';
-    if (p && d >= S.settings.start && d <= today) {
+    if (p && d >= S.settings.start && d >= WAKE.from && d <= today) {
       const j = Calc.judge(p, S.log[d], t, S.settings);
       cls += ' cls' + (j.result ? ' ' + j.result : '');
     } else if (p && d > today) cls += ' cls';
@@ -1485,6 +1488,8 @@ setInterval(() => {
 }, 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) Sync.soon(100); if (!document.hidden && !(document.activeElement && document.activeElement.matches('input'))) render(); });
 
+// 目覚ましのリセットで召喚の数が変わったので、新しく来た魔物を見せ直す(端末ごとに一度だけ)
+if (store.get('ha-wakereset', '') !== WAKE.from) { store.set('ha-shown', 0); store.set('ha-wakereset', WAKE.from); }
 render();
 Sync.soon(100);
 setInterval(() => { if (!document.hidden) Sync.soon(100); }, 60000);
