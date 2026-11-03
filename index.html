@@ -1109,7 +1109,7 @@ function timerCard(t) {
     <form class="add" data-form="manual"><select name="s">${opts(S.lastSubj)}</select>
       <input type="date" name="d" min="${Calc.week(t)}" max="${today}" value="${today}" aria-label="日付">
       <input type="number" name="h" min="0" max="23" value="0" inputmode="numeric" aria-label="時間" class="hm"><span class="label">時間</span>
-      <input type="number" name="m" min="0" max="59" step="5" value="30" inputmode="numeric" aria-label="分" class="hm"><span class="label">分</span>
+      <input type="number" name="m" min="0" max="59" step="1" value="30" inputmode="numeric" aria-label="分" class="hm"><span class="label">分</span>
       <button class="btn main">追加</button></form>
     <button class="linkbtn" data-s="snew">＋ 教科を追加</button></section>`;
 }
@@ -1407,7 +1407,7 @@ document.addEventListener('click', e => {
     case 'stop': {
       const tm = ss.timer; if (!tm) return;
       ss.timer = null;
-      const min = Math.min(24 * 60, Math.round((now() - tm.at) / 60000));
+      const min = Math.min(24 * 60, Math.round((now() - tm.at) / 60000));   // 30秒以上は切り上げ、30秒未満は切り捨て
       if (min < 1) { save(); render(); pop('1分未満'); return; }
       addStudy(tm.s, min, tm.at); return;
     }
@@ -1460,7 +1460,7 @@ document.addEventListener('submit', async e => {
   } else if (f.dataset.form === 'manual') {
     const sid = f.elements['s'].value, dv = f.elements['d'].value;
     const min = (parseInt(f.elements['h'].value, 10) || 0) * 60 + (parseInt(f.elements['m'].value, 10) || 0);
-    if (!sid) return;
+    if (!sid || sid === '__new') return;
     if (min < 1 || min > 1440) { alert('時間は1分から24時間のあいだで入れてね'); return; }
     if (!dv || dv < Calc.week(t) || dv > Calc.ymd(t)) { alert('日付は今週の月曜から今日までをえらんでね'); return; }
     const at = dv === Calc.ymd(t) ? +t : Calc.parse(dv).setHours(20, 0, 0, 0);
