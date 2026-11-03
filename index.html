@@ -332,6 +332,14 @@
   .chip { display: inline-flex; align-items: center; gap: 5px; }
   .chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
   .subj { display: grid; grid-template-columns: minmax(0, 7em) 1fr auto; gap: 8px; align-items: center; font-size: 14px; padding: 3px 0; }
+  .genre { display: grid; grid-template-columns: minmax(0, 1fr) 28% 9.5em; gap: 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+  .head + .genre { border-top: 0; }
+  .genre > div { display: flex; flex-direction: column; min-width: 0; } .genre > div .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .genre .sb { height: 8px; background: #2a2017; } .genre .sb i { display: block; height: 100%; background: var(--gold); }
+  .genre .gt { text-align: right; font-variant-numeric: tabular-nums; display: flex; flex-direction: column; }
+  .gedit { margin-top: 10px; } .gedit summary { cursor: pointer; font-size: 14px; color: var(--gold); }
+  .grow { display: grid; grid-template-columns: minmax(0, 7em) 1fr; gap: 8px; align-items: center; margin-top: 8px; }
+  .grow input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 2px; background: var(--bg); color: var(--ink); width: 100%; min-width: 0; }
   .subj .sb { height: 6px; background: #2a2017; } .subj .sb i { display: block; height: 100%; }
   .sw { display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle; }
   .sw button { width: 18px; height: 18px; border-radius: 50%; border: 0; padding: 0; }
@@ -1131,6 +1139,32 @@ function studyChart(z, t) {
   return `<section class="card"><div class="head"><h2>今週の勉強</h2><span class="label">${md(cur)}〜${md(Calc.addDays(cur, 6))} ・ 合計 ${fmtMin(sum)}</span></div>
     <div class="chart">${svg}</div>${rows || '<div class="empty">今週の記録はまだない。タイマーをスタートするか、手で追加すると、曜日別・教科別の時間が出ます</div>'}</section>`;
 }
+// ジャンル別の勉強時間。教科にジャンルを付けると、今週とこれまでの合計が出る
+const genreOf = id => (S.settings.study.subjects.find(x => x.id === id) || {}).g || '未分類';
+function genreCard(z) {
+  const ss = S.settings.study, wk = {}, all = {};
+  S.study.forEach(e => { const g = genreOf(e.s); all[g] = (all[g] || 0) + e.min; if (Calc.week(new Date(e.at)) === z.cur) wk[g] = (wk[g] || 0) + e.min; });
+  ss.subjects.forEach(x => { const g = x.g || '未分類'; if (!(g in all)) all[g] = 0; });
+  const max = Math.max(1, ...Object.values(wk)), names = Object.keys(all).sort((a, b) => (wk[b] || 0) - (wk[a] || 0) || all[b] - all[a]);
+  const subs = g => ss.subjects.filter(x => (x.g || '未分類') === g).map(x => esc(x.name)).join('・');
+  const rows = names.map(g => `<div class="genre"><div><b>${esc(g)}</b><span class="label">${subs(g) || '（消した教科）'}</span></div>
+    <span class="sb"><i style="width:${(wk[g] || 0) / max * 100}%"></i></span><span class="gt">${fmtMin(wk[g] || 0)}<span class="label">これまで ${fmtMin(all[g])}</span></span></div>`).join('');
+  const gl = [...new Set(ss.subjects.map(x => x.g).filter(Boolean))];
+  return `<section class="card"><div class="head"><h2>ジャンル別</h2><span class="label">今週 ・ これまで</span></div>
+    ${rows || '<div class="empty">教科を足すと、ここにジャンルごとの時間が出ます</div>'}
+    <details class="gedit"${S.gOpen ? ' open' : ''}><summary>教科のジャンルを決める</summary>
+      <datalist id="genres">${gl.map(g => `<option value="${esc(g)}">`).join('')}</datalist>
+      ${ss.subjects.map(x => `<div class="grow"><span class="chip"><i style="background:${x.color}"></i>${esc(x.name)}</span>
+        <input type="text" list="genres" maxlength="16" placeholder="例：語学、理系、資格" data-sg="${x.id}" value="${esc(x.g || '')}" aria-label="${esc(x.name)}のジャンル"></div>`).join('')}
+      <p class="note">同じ名前を入れた教科が、ひとつのジャンルにまとまります。空にすると「未分類」。</p></details></section>`;
+}
+document.addEventListener('toggle', e => { if (e.target.matches && e.target.matches('details.gedit')) S.gOpen = e.target.open; }, true);
+document.addEventListener('change', e => {
+  const id = e.target.dataset && e.target.dataset.sg; if (!id) return;
+  const x = S.settings.study.subjects.find(x => x.id === id); if (!x) return;
+  const v = e.target.value.trim().slice(0, 16); if (v) x.g = v; else delete x.g;
+  save(); render();
+});
 function entriesCard(z) {
   const list = S.study.filter(e => Calc.week(new Date(e.at)) === z.cur).sort((a, b) => b.at - a.at);
   return `<section class="card"><div class="head"><h2>今週の記録</h2><span class="label">${list.length}件</span></div>
@@ -1173,7 +1207,7 @@ function render() {
   const st = Calc.stats(S.log, S.settings, t, S);
   const wake = () => todayCard(t) + weeksCard(t) + settingsCard();
   const habits = () => gardenCard(st, t) + habitsCard(t);
-  const study = () => { const z = Calc.study(S.study, S.settings.study, t); return studyGoalCard(z, st) + timerCard(t) + studyChart(z, t) + entriesCard(z) + studySettings(z); };
+  const study = () => { const z = Calc.study(S.study, S.settings.study, t); return studyGoalCard(z, st) + timerCard(t) + studyChart(z, t) + genreCard(z) + entriesCard(z) + studySettings(z); };
   if (WIDE.matches) $('#app').innerHTML = `<div class="cols"><div>${petCard(st)}${wake()}</div><div>${habits()}</div><div>${todosCard(t)}</div><div>${study()}</div></div>` + tabsBar();
   else $('#app').innerHTML = petCard(st) + (S.tab === 'tasks' ? habits() + todosCard(t) : S.tab === 'study' ? study() : wake()) + tabsBar();
   const rc = recapItems(t);
@@ -1402,7 +1436,12 @@ function newSubject() {
   if (name) {
     const have = ss.subjects.find(x => x.name === name);
     if (have) S.lastSubj = have.id;
-    else { const x = { id: 's' + uid(), name, color: SCOLORS[ss.subjects.length % SCOLORS.length] }; ss.subjects.push(x); S.lastSubj = x.id; }
+    else {
+      const gl = [...new Set(ss.subjects.map(x => x.g).filter(Boolean))];
+      const g = (prompt(`「${name}」のジャンル（空でもOK）${gl.length ? '\nいまあるジャンル：' + gl.join('、') : ''}`) || '').trim().slice(0, 16);
+      const x = { id: 's' + uid(), name, color: SCOLORS[ss.subjects.length % SCOLORS.length] }; if (g) x.g = g;
+      ss.subjects.push(x); S.lastSubj = x.id;
+    }
     save();
   }
   render();
@@ -1484,7 +1523,7 @@ function importBenkyo(data, t) {
       const have = new Set(S.study.map(e => e.id));
       S.study = [...S.study, ...entries.filter(e => !have.has(e.id))];
       const ss = S.settings.study;
-      ss.subjects = (st.subjects || []).map(x => ({ id: x.id, name: x.name, color: x.color || SCOLORS[0] }));
+      ss.subjects = (st.subjects || []).map(x => ({ id: x.id, name: x.name, color: x.color || SCOLORS[0], ...(x.g ? { g: x.g } : {}) }));
       ss.goals = goals;
       ss.from = [weeks[0] || Calc.week(t), ss.from].sort()[0];
       ss.graves = (st.graves || []).map(g => ({ name: g.name, born: g.born, died: g.died }));
