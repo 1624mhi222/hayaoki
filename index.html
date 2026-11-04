@@ -74,6 +74,7 @@
   .weeks .wd { text-align: center; font-size: 11px; color: var(--quiet); }
   .weeks .c { height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 11px; color: var(--quiet); background: none; }
   .weeks .c.cls { background: var(--chip); }
+  .weeks button.c { border: 0; font: inherit; font-size: 11px; cursor: pointer; padding: 0; width: 100%; }
   .weeks .c.perfect { background: var(--good); color: #fff; } .weeks .c.half { background: var(--warn); color: #fff; }
   .weeks .c.over { background: var(--bad); color: #fff; }
   .weeks .c.now { outline: 2px solid var(--accent); }
@@ -403,7 +404,9 @@ const Calc = {
   // 流れ: 目標の時間までに「起きた！」(c1) → 15分後に「まだ起きてる！」(c2)
   judge(p, rec, now, s) {
     if (!p) return { phase: 'off' };
-    if (WAKE.ok.includes(this.ymd(p.target))) return { phase: 'done', result: 'perfect', xp: XP.perfect };
+    // 起きていたのに押し忘れた朝は、あとから成功にできる(設定に日付を残すので端末をまたいでも同じ)
+    const pd = this.ymd(p.target);
+    if (WAKE.ok.includes(pd) || (s.wakeFix || []).includes(pd)) return { phase: 'done', result: 'perfect', xp: XP.perfect, fixed: true };
     rec = rec || {};
     const c1 = rec.c1 ? new Date(rec.c1) : null, c2 = rec.c2 ? new Date(rec.c2) : null;
     if (!c1 || c1 >= p.close) {
@@ -914,7 +917,9 @@ function todayCard(t) {
     const times = [j.c1 && `起きた ${Calc.hm(j.c1)}`, j.c2 && `2回目 ${Calc.hm(j.c2)}`].filter(Boolean).join(' ・ ');
     body = `<div class="result ${r}"><b>${RESULT[r]}</b> <span>${j.xp >= 0 ? '+' : '−'}${Math.abs(j.xp)} XP</span>${times ? `<div class="label">${times}</div>` : ''}
       ${r === 'over' ? '<div class="note">寝坊の朝、相棒は★を一つ失い、経験値も大きく減った。★がなくなった魔物は去っていく</div>' : ''}
-      ${r === 'half' ? '<div class="note">連続記録は0に戻りました</div>' : ''}</div>`;
+      ${r === 'half' ? '<div class="note">連続記録は0に戻りました</div>' : ''}
+      ${j.fixed && (S.settings.wakeFix || []).includes(d) ? '<div class="label">あとから成功にした朝</div>' : ''}</div>
+      ${r === 'over' || r === 'half' ? `<button class="btn" data-act="fix" data-d="${d}">起きてたのに押し忘れた → 成功にする</button>` : ''}`;
   }
   return `<section class="card today">${head}${body}</section>`;
 }
@@ -941,11 +946,14 @@ function weeksCard(t) {
       cls += ' cls' + (j.result ? ' ' + j.result : '');
     } else if (p && d > today) cls += ' cls';
     if (d === today) cls += ' now';
-    cells += `<div class="${cls}">${Number(d.slice(8))}</div>`;
+    cells += /\b(over|half)\b/.test(cls) && d < today
+      ? `<button class="${cls}" data-act="fix" data-d="${d}" title="押し忘れなら成功にする">${Number(d.slice(8))}</button>`
+      : `<div class="${cls}">${Number(d.slice(8))}</div>`;
   }
   return `<section class="card"><h2>戦歴</h2><div class="weeks">${cells}</div>
     <div class="legend"><span><i style="background:var(--gold)"></i>完全覚醒</span><span><i style="background:#4a2f12"></i>半覚醒</span>
-    <span><i style="background:#a8281c"></i>寝坊</span><span><i style="background:var(--chip)"></i>目標がある日</span></div></section>`;
+    <span><i style="background:#a8281c"></i>寝坊</span><span><i style="background:var(--chip)"></i>目標がある日</span></div>
+    <p class="note">起きてたのに押し忘れた日は、寝坊・半覚醒の日をタップすると成功にできる。</p></section>`;
 }
 
 function settingsCard() {
@@ -1278,6 +1286,14 @@ document.addEventListener('click', e => {
     if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(url) || !key) { alert('Apps ScriptのURL（https://script.google.com/…/exec）と合言葉を入れてね'); return; }
     Sync.conf = { url, key }; store.set('ha-api', Sync.conf);
     Sync.status = 'つないでいます…'; render(); Sync.run();
+  } else if (act === 'fix') {
+    const dd = b.dataset.d, dt = Calc.parse(dd);
+    if (!confirm(`${dt.getMonth() + 1}月${dt.getDate()}日の朝を「完全覚醒」にしますか？\n寝坊・二度寝の減点と、相棒の★が減ったのがなかったことになります。`)) return;
+    const before = Calc.stats(S.log, S.settings, t, S);
+    S.settings.wakeFix = [...new Set([...(S.settings.wakeFix || []), dd])];
+    saveSettings(); render();
+    const after = Calc.stats(S.log, S.settings, t, S);
+    pop(`成功にした ・ ${after.xp >= before.xp ? '+' : '−'}${Math.abs(after.xp - before.xp)} XP`);
   } else if (act === 'apioff') {
     if (confirm('スプレッドシート連携をやめますか？')) { Sync.conf = null; store.set('ha-api', null); Sync.status = ''; render(); }
   }
